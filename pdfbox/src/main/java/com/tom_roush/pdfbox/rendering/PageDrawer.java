@@ -275,30 +275,17 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //    protected Paint getPaint(PDColor color) throws IOException TODO: PdfBox-Android
 
     // returns an integer for color that Android understands from the PDColor
-    // TODO: alpha?
     private int getColor(PDColor color) throws IOException {
         PDColorSpace colorSpace = color.getColorSpace();
-        if (colorSpace instanceof PDDeviceCMYK) {
-            Log.w("ceshi","PDDeviceCMYK=====1111");
-//            Log.w("ceshi",colorSpace.toString());
-            Log.w("ceshi",String.format("x:%f,%f,%f,%f",color.getComponents()[0],color.getComponents()[1],color.getComponents()[2],color.getComponents()[3]));
-            float[] rgbValues = ((PDDeviceCMYK)colorSpace).toRGB(color.getComponents());
-            int r = Math.round(rgbValues[2] * 255)&0xff;
-            int g = Math.round(rgbValues[1] * 255)&0xff;
-            int b = Math.round(rgbValues[0] * 255)&0xff;
-            Log.w("ceshi","r:"+r+",g:"+g+",b:"+b);
-//            Log.w("ceshi","hadingColorSpace.toRGB::"+rgbValues[2]);
-            return Color.rgb(r,g,b);
-        }
+        //Log.w("ceshi","hadingColorSpace.toRGB::"+colorSpace.getClass().getSimpleName());
         if (colorSpace instanceof PDPattern) {
-            PDAbstractPattern pattern = ((PDPattern)colorSpace).getPattern(color);
-            Log.w("ceshi","getColor:"+pattern.getClass().getSimpleName());
-            if (pattern instanceof PDTilingPattern) {
-                return Color.argb(0,0,0,0);
-            } else {
-                
-            }
-
+//            PDAbstractPattern pattern = ((PDPattern)colorSpace).getPattern(color);
+//            Log.w("ceshi","getColor:"+pattern.getClass().getSimpleName());
+//            if (pattern instanceof PDTilingPattern) {
+//                return Color.argb(0,0,0,0);
+//            } else {
+//
+//            }
 //            if(color.getComponents().length==4) {
 //                float[] floats = color.getComponents();
 //                return Color.argb(Math.round(floats[0] * 255),Math.round(floats[1] * 255),Math.round(floats[2] * 255),Math.round(floats[3] * 255));
@@ -310,7 +297,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         int r = Math.round(floats[0] * 255)&0xff;
         int g = Math.round(floats[1] * 255)&0xff;
         int b = Math.round(floats[2] * 255)&0xff;
-//        Log.w("ceshi","r:"+r+",g:"+g+",b:"+b);
+        //Log.w("ceshi","r:"+r+",g:"+g+",b:"+b);
         return Color.rgb(r, g, b);
     }
 
@@ -321,7 +308,6 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         Region clippingPath = getGraphicsState().getCurrentClippingPath();
         if (clippingPath != lastClip)
         {
-            Log.w("ceshi","clippingPath:"+clippingPath);
 //            Log.w("ceshi","canvas.clipPath:"+clippingPath);
             Path path = clippingPath.getBoundaryPath();
 //            android.graphics.Matrix matrix = new android.graphics.Matrix();
@@ -346,7 +332,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             path.transform(matrix);
             RectF rectF = new RectF();
             path.computeBounds(rectF,true);
-            Log.w("ceshi","setClip2====="+rectF);
+//            Log.w("ceshi","setClip2====="+rectF);
             canvas.clipPath(path);//TODO: PdfBox-Android
 //            lastClip.setEmpty();
             lastClip = clippingPath;
@@ -357,7 +343,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     public void beginText() throws IOException
     {
         canvas.save();
-        setClip2();
+//        setClip2();
         beginTextClip();
     }
 
@@ -414,6 +400,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         at.concatenate(font.getFontMatrix().createAffineTransform());
 
         Glyph2D glyph2D = createGlyph2D(font);
+//        Log.w("ceshi","glyph2D:::"+glyph2D.getClass().getSimpleName());
         drawGlyph2D(glyph2D, font, code, displacement, at);
     }
 
@@ -433,6 +420,11 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         PDGraphicsState state = getGraphicsState();
         RenderingMode renderingMode = state.getTextState().getRenderingMode();
 
+//        test++;
+//        if (test!=2) {
+//            return;
+//        }
+//        Log.w("ceshi",test+"__Glyph2D::"+glyph2D.getClass().getSimpleName());
         Path path = glyph2D.getPathForCharacterCode(code);
         if (path != null)
         {
@@ -453,32 +445,25 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             // render glyph
 //            Shape glyph = at.createTransformedShape(path);
             path.transform(at.toMatrix());
-//            RectF rectF = new RectF();
-//            path.computeBounds(rectF,true);
+            RectF rectF = new RectF();
+            path.computeBounds(rectF,true);
 
-            if (renderingMode.isFill())
+            if (isContentRendered())
             {
-//                Log.w("ceshi","字体路径111："+rectF);
-//                graphics.setComposite(state.getNonStrokingJavaComposite());
-//                graphics.setPaint(getNonStrokingPaint());
-                paint.setColor(getNonStrokingColor());
-                setClip2();
-                if (isContentRendered())
+                if (renderingMode.isFill())
                 {
+//                    Log.w("ceshi","字体路径111："+rectF);
+                    paint.setColor(getNonStrokingColor());
+                    setClip2();
                     paint.setStyle(Paint.Style.FILL);
                     canvas.drawPath(path, paint);
                 }
-            }
-
-            if (renderingMode.isStroke())
-            {
-//                graphics.setComposite(state.getStrokingJavaComposite());
-//                graphics.setPaint(getStrokingPaint());
-                paint.setColor(getStrokingColor());
-//                graphics.setStroke(getStroke());
-                setClip2();
-                if (isContentRendered())
+                if (renderingMode.isStroke())
                 {
+//                    Log.w("ceshi","字体路径222："+rectF);
+                    paint.setColor(getStrokingColor());
+                    setStroke();
+                    setClip2();
                     paint.setStyle(Paint.Style.STROKE);
                     canvas.drawPath(path, paint);
                 }
@@ -536,7 +521,8 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             {
                 // a Type0 CIDFont contains CFF font
                 PDCIDFontType0 cidType0Font = (PDCIDFontType0)type0Font.getDescendantFont();
-                glyph2D = new CIDType0Glyph2D(cidType0Font); // todo: could be null (need incorporate fallback)
+                glyph2D = new CIDType0Glyph2D(cidType0Font);
+                // todo: could be null (need incorporate fallback)
             }
         }
         else
@@ -698,11 +684,11 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     public void fillPath(Path.FillType windingRule) throws IOException
     {
         test++;
-//        if (test != 1) {
+//        Log.w("ceshi","fillPath--------------"+test);
+//        if (test != 999) {
 //            return;
 //        }
 //        test++;
-        Log.w("ceshi","fillPath--------------"+test);
 
         paint.setAlpha((int)(getGraphicsState().getNonStrokeAlphaConstant()*255));
         canvas.save();
@@ -940,6 +926,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 
     private void drawBitmap(Bitmap image, AffineTransform at) throws IOException
     {
+        canvas.save();
 //        Log.w("ceshi","绘制图片==="+(int)(getGraphicsState().getNonStrokeAlphaConstant()*255));
         paint.setAlpha((int)(getGraphicsState().getNonStrokeAlphaConstant()*255));
 //        graphics.setComposite(getGraphicsState().getNonStrokingJavaComposite());
@@ -978,6 +965,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
                 canvas.drawBitmap(image, imageTransform.toMatrix(), paint);
             }
         }
+        canvas.restore();
     }
 
     private Bitmap applyTransferFunction(Bitmap image, COSBase transfer) throws IOException
@@ -1211,7 +1199,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         Paint strokePaint = new Paint(paint);
         strokePaint.setColor(getColor(ab.color));
         setStroke(strokePaint, ab.width, Paint.Cap.BUTT, Paint.Join.MITER, 10, ab.dashArray, 0);
-        canvas.restore();
+//        canvas.restore();
         if (ab.underline)
         {
             canvas.drawLine(rectangle.getLowerLeftX(), rectangle.getLowerLeftY(),

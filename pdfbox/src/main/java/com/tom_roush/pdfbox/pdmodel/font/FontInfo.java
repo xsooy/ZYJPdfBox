@@ -19,6 +19,8 @@ package com.tom_roush.pdfbox.pdmodel.font;
 
 import com.tom_roush.fontbox.FontBoxFont;
 
+import java.io.File;
+
 /**
  * Information about a font on the system.
  *
@@ -46,6 +48,8 @@ public abstract class FontInfo
      * cache the return value of this method unless doing so via the current {@link FontCache}.
      */
     public abstract FontBoxFont getFont();
+
+    public abstract File getFile();
 
     /**
      * Returns the sFamilyClass field of the "OS/2" table, or -1.

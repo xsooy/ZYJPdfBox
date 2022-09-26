@@ -17,6 +17,7 @@
 package com.tom_roush.fontbox.ttf;
 
 import android.graphics.Path;
+import android.util.Log;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -44,7 +45,7 @@ public class TrueTypeFont implements FontBoxFont, Closeable
     private int unitsPerEm = -1;
     protected Map<String,TTFTable> tables = new HashMap<String,TTFTable>();
     private final TTFDataStream data;
-    private Map<String, Integer> postScriptNames;
+    public Map<String, Integer> postScriptNames;
     private final List<String> enabledGsubFeatures = new ArrayList<String>();
 
     /**
@@ -141,6 +142,7 @@ public class TrueTypeFont implements FontBoxFont, Closeable
         TTFTable ttfTable = tables.get(tag);
         if (ttfTable != null && !ttfTable.getInitialized())
         {
+//            Log.w("ceshi","测试条件22"+tag);
             readTable(ttfTable);
         }
         return ttfTable;

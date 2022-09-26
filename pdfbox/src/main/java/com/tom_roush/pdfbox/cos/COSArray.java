@@ -42,6 +42,26 @@ public class COSArray extends COSBase implements Iterable<COSBase>, COSUpdateInf
         //default constructor
     }
 
+
+    /**
+     * Use the given list to initialize the COSArray.
+     *
+     * @param cosObjectables the initial list of COSObjectables
+     */
+    public COSArray(List<? extends COSObjectable> cosObjectables)
+    {
+        if (cosObjectables == null)
+        {
+            throw new IllegalArgumentException("List of COSObjectables cannot be null");
+        }
+        for (COSObjectable objectable:cosObjectables) {
+            objects.add(objectable.getCOSObject());
+        }
+//        updateState = new COSUpdateState(this);
+//        cosObjectables.forEach(cosObjectable ->
+//                objects.add(cosObjectable != null ? cosObjectable.getCOSObject() : null));
+    }
+
     /**
      * This will add an object to the array.
      *

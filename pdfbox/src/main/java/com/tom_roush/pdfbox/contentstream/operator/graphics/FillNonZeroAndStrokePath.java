@@ -36,7 +36,7 @@ public class FillNonZeroAndStrokePath extends GraphicsOperatorProcessor
     @Override
     public void process(Operator operator, List<COSBase> operands) throws IOException
     {
-        Log.w("ceshi","FillNonZeroAndStrokePath");
+//        Log.w("ceshi","FillNonZeroAndStrokePath");
         context.fillAndStrokePath(Path.FillType.WINDING);
     }
 

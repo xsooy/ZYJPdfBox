@@ -29,9 +29,12 @@ import java.io.InputStream;
 import java.net.URI;
 import java.security.AccessControlException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import com.tom_roush.fontbox.FontBoxFont;
 import com.tom_roush.fontbox.cff.CFFCIDFont;
@@ -142,6 +145,11 @@ final class FileSystemFontProvider extends FontProvider
         }
 
         @Override
+        public File getFile() {
+            return file;
+        }
+
+        @Override
         public int getFamilyClass()
         {
             return sFamilyClass;
@@ -213,11 +221,34 @@ final class FileSystemFontProvider extends FontProvider
             try
             {
                 //TODO: zyj 需要中文字体库
-                addTrueTypeFont(new File("/system/fonts/Miui-Light.ttf"));
-                addTrueTypeFont(new File("/system/fonts/zhongsong.ttf"));
+//                addTrueTypeFont(new File("/system/fonts/Miui-Light.ttf"));
+//                addTrueTypeFont(new File("/system/fonts/zhongsong.ttf"));
+                addTrueTypeCollection(new File("/storage/emulated/0/Android/data/com.example.test/files/ヒラギノ角ゴシック W5.ttc"));
+//                addTrueTypeCollection(new File("/system/fonts/NotoSansCJK-Regular.ttc"));
                 addTrueTypeFont(new File("/system/fonts/DroidSans.ttf"));
                 addTrueTypeFont(new File("/system/fonts/DroidSans-Bold.ttf"));
                 addTrueTypeFont(new File("/system/fonts/DroidSansMono.ttf"));
+//                File fontDir = new File("/system/fonts/");
+//                if (fontDir.exists()&& fontDir.isDirectory()) {
+//                    SortedSet<File> sortedSet = new TreeSet(new Comparator<File>() {
+//                        @Override
+//                        public int compare(File o1, File o2) {
+//                            return (int)(o2.length()-o1.length());
+//                        }
+//                    });
+//                    for (File file:fontDir.listFiles()) {
+//                        sortedSet.add(file);
+//                    }
+//                    Log.w("ceshi","fontDir.size():"+fontDir.listFiles().length);
+//                    Log.w("ceshi","sortedSet.size():"+sortedSet.size());
+//                    for (int i=0;i<3;i++) {
+//                        File file = sortedSet.first();
+//                        sortedSet.remove(file);
+//                        Log.w("ceshi",file.getName()+","+file.length());
+//                        addTrueTypeFont(file);
+//                    }
+//                }
+
 //                addTrueTypeFont(new File("/system/fonts/DroidSansFallback.ttf"));
                 // XXX: list may need to be expanded for other character sets
                 return;
@@ -766,6 +797,32 @@ final class FileSystemFontProvider extends FontProvider
         try
         {
             // todo JH: we don't yet support loading CFF fonts from OTC collections 
+
+            if (file.getName().toLowerCase().endsWith(".ttc"))
+            {
+                @SuppressWarnings("squid:S2095")
+                // ttc not closed here because it is needed later when ttf is accessed,
+                // e.g. rendering PDF with non-embedded font which is in ttc file in our font directory
+                TrueTypeCollection ttc = new TrueTypeCollection(file);
+                TrueTypeFont ttf;
+                try
+                {
+                    ttf = ttc.getFontByName(postScriptName);
+                }
+                catch (IOException ex)
+                {
+                    ex.printStackTrace();
+                    ttc.close();
+                    return null;
+                }
+                if (ttf == null)
+                {
+                    ttc.close();
+                    throw new IOException("Font " + postScriptName + " not found in " + file);
+                }
+                return (OpenTypeFont) ttf;
+            }
+
             OTFParser parser = new OTFParser(false, true);
             OpenTypeFont otf = parser.parse(file);
 

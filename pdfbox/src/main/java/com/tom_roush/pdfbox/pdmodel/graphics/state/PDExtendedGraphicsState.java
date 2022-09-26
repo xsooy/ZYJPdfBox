@@ -17,6 +17,7 @@
 package com.tom_roush.pdfbox.pdmodel.graphics.state;
 
 import android.graphics.Paint;
+import android.util.Log;
 
 import java.io.IOException;
 

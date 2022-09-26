@@ -54,6 +54,11 @@ public class PDPattern extends PDSpecialColorSpace{
         throw new UnsupportedOperationException();
     }
 
+//    @Override
+//    public Bitmap toRGBImage(int[] raster) throws IOException {
+//        throw new UnsupportedOperationException();
+//    }
+
     @Override
     public Bitmap toRGBImage(Bitmap raster) throws IOException {
         throw new UnsupportedOperationException();

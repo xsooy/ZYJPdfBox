@@ -50,6 +50,7 @@ final class CIDType0Glyph2D implements Glyph2D
     public Path getPathForCharacterCode(int code)
     {
         Path path = cache.get(code);
+        Log.w("ceshi","formt:"+String.format("%04x", code));
         if (path == null)
         {
             try

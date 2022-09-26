@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.pdf.PdfRenderer;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 import android.text.TextUtils;
@@ -16,6 +17,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.documentfile.provider.DocumentFile;
 
+import com.blankj.utilcode.util.ToastUtils;
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPageTree;
@@ -36,10 +38,12 @@ public class MainActivity extends AppCompatActivity {
 //    private PDFUtils pdfUtils = new PDFUtils();
     private ImageView imageView;
 //    private IccUtils iccUtils;
+    private boolean isSys = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        IccUtils.iccProfileDir = getExternalFilesDir("").getAbsolutePath();
         setContentView(R.layout.activity_main);
 //        iccUtils = new IccUtils();
 //        iccUtils.loadProfile(getExternalFilesDir("").getAbsolutePath()+"/ISOcoated_v2_300_bas.icc");
@@ -47,23 +51,32 @@ public class MainActivity extends AppCompatActivity {
 //        Log.w("ceshi",String.format("r:%d,g:%d,b:%d",ceshi>>16&0xff,ceshi>>8&0xff,ceshi&0xff));
         imageView = findViewById(R.id.iv_image);
         PDFBoxResourceLoader.init(getApplicationContext());
-        findViewById(R.id.tv_title).setOnClickListener(view -> {
-            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-            String [] mimeTypes = {
+        findViewById(R.id.tv_left).setOnClickListener(view -> {
+            isSys = true;
+            openFile();
+        });
+        findViewById(R.id.tv_right).setOnClickListener(view -> {
+            isSys = false;
+            openFile();
+        });
+    }
+
+    private void openFile() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        String [] mimeTypes = {
 //                "image/*",
-                    "application/pdf"
+                "application/pdf"
 //                ,"text/plain","application/vnd.ms-powerpoint",
 //                "application/vnd.openxmlformats-officedocument.presentationml.presentation",
 //                "application/msword",
 //                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 //                "application/vnd.ms-excel",
 //                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            };
-            intent.setType("*/*");
-            intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
-            intent.addCategory(Intent.CATEGORY_OPENABLE);
-            startActivityForResult(intent,REQUEST_FILE);
-        });
+        };
+        intent.setType("*/*");
+        intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(intent,REQUEST_FILE);
     }
 
     private void _doForPdfAnnots(String path) {
@@ -71,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
             File file = new File(path);
             ParcelFileDescriptor fileDescriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY);
             PdfRenderer pdfRenderer = new PdfRenderer(fileDescriptor);
-            PdfRenderer.Page currentPage = pdfRenderer.openPage(0);
+            PdfRenderer.Page currentPage = pdfRenderer.openPage(1);
             float scale = 300/72f;
             int width = (int) (currentPage.getWidth()*scale);
             int height = (int) (currentPage.getHeight()*scale);
@@ -82,59 +95,59 @@ public class MainActivity extends AppCompatActivity {
             currentPage.close();
             pdfRenderer.close();
             fileDescriptor.canDetectErrors();
-            PDDocument document = PDDocument.load(new File(path));
-//            PDPageTree pdPageTree = document.getPages();
-            YJPDFRenderer renderer = new YJPDFRenderer(document);
-//            for (int i=0;i<pdPageTree.getCount();i++){
-//            Bitmap bitmap = Bitmap.createBitmap(4966,3308, Bitmap.Config.ARGB_8888);
-            renderer.renderImage(bitmap,0);
-            String filePath = getPreviewDir()+"temp.jpg";
-            saveBitmap(bitmap,filePath);
-//                if (i==0) {
-            imageView.setImageBitmap(bitmap);
-//                }
+//            if (!isSys) {
+//                PDDocument document = PDDocument.load(new File(path));
+////            PDPageTree pdPageTree = document.getPages();
+//                YJPDFRenderer renderer = new YJPDFRenderer(document);
+//                renderer.renderImage(bitmap,0);
+//                String filePath = getPreviewDir()+"temp.jpg";
+//                saveBitmap(bitmap,filePath);
+//                document.close();
 //            }
-            document.close();
+            imageView.setImageBitmap(bitmap);
         } catch (IOException e) {
             e.printStackTrace();
+        }catch (SecurityException e) {
+            e.printStackTrace();
+            ToastUtils.showShort("不支持加密文档");
         }
     }
 
     private void _doForPdf(String path,String pwd) {
-        PDDocument document;
-        try {
-            if (TextUtils.isEmpty(pwd)){
-                document = PDDocument.load(new File(path));
-            } else {
-                document = PDDocument.load(new File(path),pwd);
-            }
-            PDPageTree pdPageTree = document.getPages();
-            Paint paint = new Paint();
-            paint.setColor(Color.WHITE);
-            paint.setStyle(Paint.Style.FILL);
-            PDFRenderer renderer = new PDFRenderer(document);
-            for (int i=0;i<pdPageTree.getCount();i++){
-                Bitmap bitmap = renderer.renderImageWithDPI(i, 600);
-                String filePath = getPreviewDir()+(i+1)+".jpg";
-                saveBitmap(bitmap,filePath);
-                if (i==0) {
-                    imageView.setImageBitmap(bitmap);
+        new Thread() {
+            @Override
+            public void run() {
+                super.run();
+                PDDocument document;
+                try {
+
+                    if (TextUtils.isEmpty(pwd)){
+                        document = PDDocument.load(new File(path));
+                    } else {
+                        document = PDDocument.load(new File(path),pwd);
+                    }
+                    Paint paint = new Paint();
+                    paint.setColor(Color.WHITE);
+                    paint.setStyle(Paint.Style.FILL);
+                    PDFRenderer renderer = new PDFRenderer(document);
+                    Bitmap bitmap = renderer.renderImageWithDPI(1, 300);
+                    String filePath = getPreviewDir()+"1.jpg";
+                    saveBitmap(bitmap,filePath);
+                    imageView.post(()->{
+                        try {
+                            imageView.setImageBitmap(BitmapUtils.compressBitmapFormPath(getPreviewDir()+"1.jpg",imageView.getWidth(),imageView.getHeight()));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                    document.close();
+                } catch (InvalidPasswordException e){
+                    e.printStackTrace();
+                }catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
-            document.close();
-        } catch (InvalidPasswordException e){
-            e.printStackTrace();
-//            if (TextUtils.isEmpty(pdfPwd)) {
-//                if (delegate!=null)delegate.renderDidFailedPageForPreview(this,0,Error.pdfSecurity);
-//            } else {
-//                PrintLogCat.w(TAG,"密码错误");
-//                if (delegate!=null)delegate.renderDidFailedPageForPreview(this,0,Error.pdfPwdError);
-//            }
-        }catch (Exception e) {
-            e.printStackTrace();
-//            if (delegate!=null)delegate.renderDidFailedPageForPreview(this,0,Error.other);
-        }
-//        if (delegate!=null)delegate.renderDidEndJob(this);
+        }.start();
     }
 
     private void saveBitmap(Bitmap bitmap,String filePath) {
@@ -198,20 +211,16 @@ public class MainActivity extends AppCompatActivity {
         Uri uri = data.getData();
         if (uri!= null) {
             Log.w("ceshi","返回的路径:"+uri.getEncodedPath());
-//            SPUtils.getInstance().put(KEY,uri.getEncodedPath());
-//            if (requestCode == REQUEST_FILE_TREE) {
-//                startSearch();
-//            } else if (requestCode == REQUEST_FILE) {
             try {
                 DocumentFile documentFile = DocumentFile.fromSingleUri(this,uri);
                 saveFileByPath((FileInputStream) getContentResolver().openInputStream(documentFile.getUri()),getScanImageDir()+documentFile.getName());
-                _doForPdfAnnots(getScanImageDir()+documentFile.getName());
-//                _doForPdf(getScanImageDir()+documentFile.getName(),"");
-//                pdfUtils.loadFile(new File(getScanImageDir()+documentFile.getName()));
+                if (isSys) {
+                    _doForPdf(getScanImageDir()+documentFile.getName(),"");
+                } else
+                    _doForPdfAnnots(getScanImageDir()+documentFile.getName());
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
-//            }
         }
     }
 }

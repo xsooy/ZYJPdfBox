@@ -61,12 +61,12 @@ public abstract class SetColor extends OperatorProcessor
         array.addAll(arguments);
         for (int i=0;i<array.size();i++) {
             COSBase base = array.get(i);
-            Log.w("ceshi","COSBase_Name:"+base.getClass().getSimpleName());
-            if (base instanceof COSInteger) {
-                Log.w("ceshi","value:"+((COSInteger)base).floatValue());
-            } else if (base instanceof COSFloat) {
-                Log.w("ceshi","value:"+((COSFloat)base).floatValue());
-            }
+//            Log.w("ceshi","COSBase_Name:"+base.getClass().getSimpleName());
+//            if (base instanceof COSInteger) {
+//                Log.w("ceshi","value:"+((COSInteger)base).floatValue());
+//            } else if (base instanceof COSFloat) {
+//                Log.w("ceshi","value:"+((COSFloat)base).floatValue());
+//            }
         }
         setColor(new PDColor(array, colorSpace));
     }

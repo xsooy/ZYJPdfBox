@@ -98,6 +98,7 @@ public class PDType1CFont extends PDSimpleFont
             {
                 // note: this could be an OpenType file, fortunately CFFParser can handle that
                 CFFParser cffParser = new CFFParser();
+                Log.w("ceshi","CFFParser333");
                 cffEmbedded = (CFFType1Font)cffParser.parse(bytes, new ByteSource()).get(0);
             }
         }

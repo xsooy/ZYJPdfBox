@@ -34,7 +34,7 @@ public final class FillEvenOddAndStrokePath extends GraphicsOperatorProcessor
     @Override
     public void process(Operator operator, List<COSBase> operands) throws IOException
     {
-        Log.w("ceshi","FillEvenOddAndStrokePath");
+        //Log.w("ceshi","FillEvenOddAndStrokePath");
         context.fillAndStrokePath(Path.FillType.EVEN_ODD);
     }
 

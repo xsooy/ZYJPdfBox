@@ -106,10 +106,10 @@ public class AxialShadingContext extends ShadingContext {
             {
                 float t = domain[0] + d1d0 * i / factor;
                 float[] values = axialShadingType.evalFunction(t);
-                builder.delete(0,builder.length());
-                for (float jj:values)
-                    builder.append(jj+",");
-                Log.w("ceshi","calcColorTable:"+builder.toString());
+//                builder.delete(0,builder.length());
+//                for (float jj:values)
+//                    builder.append(jj+",");
+//                Log.w("ceshi","calcColorTable:"+builder.toString());
 //                int normRGBValues;
 //                normRGBValues = (int) (values[0] * 65535);
 //                normRGBValues |= (int) (values[1] * 65535) << 8;
@@ -123,7 +123,7 @@ public class AxialShadingContext extends ShadingContext {
 //                float[] test = new float[] {(map[i]>>24&0xff)/255.f, (map[i]>>16&0xff)/255.f,(map[0]>>8&0xff)/255.f,(map[0]&0xff)/255.f};
                 map[i] = convertToRGB(values);
 
-                Log.w("ceshi",String.format("r:%d,g:%d,b:%d",map[i]>>16&0xff,map[0]>>8&0xff,map[0]&0xff));
+//                Log.w("ceshi",String.format("r:%d,g:%d,b:%d",map[i]>>16&0xff,map[0]>>8&0xff,map[0]&0xff));
             }
         }
         return map;

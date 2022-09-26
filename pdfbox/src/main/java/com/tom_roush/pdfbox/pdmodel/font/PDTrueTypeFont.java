@@ -548,6 +548,7 @@ public class PDTrueTypeFont extends PDSimpleFont implements PDVectorFont
      */
     public int codeToGID(int code) throws IOException
     {
+//        Log.w("ceshi","code::"+code);
         extractCmapTable();
         int gid = 0;
 

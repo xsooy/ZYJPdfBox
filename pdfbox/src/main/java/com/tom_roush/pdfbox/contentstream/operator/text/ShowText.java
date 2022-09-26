@@ -54,7 +54,7 @@ public class ShowText extends OperatorProcessor
             return;
         }
         COSString string = (COSString) base;
-        Log.w("ceshi","showText:"+new String(string.getBytes(),StandardCharsets.UTF_16BE));
+//        Log.w("ceshi","showText:"+new String(string.getBytes(),StandardCharsets.UTF_16BE));
         context.showTextString(string.getBytes());
     }
 

@@ -1,6 +1,7 @@
 package com.tom_roush.pdfbox.pdmodel.graphics.color;
 
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.opengl.Matrix;
 import android.util.Log;
 
@@ -8,6 +9,7 @@ import com.tom_roush.pdfbox.cos.COSName;
 import com.xsooy.icc.IccUtils;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -26,7 +28,6 @@ public class PDDeviceCMYK extends PDDeviceColorSpace
     private final PDColor initialColor = new PDColor(new float[] { 0, 0, 0, 1 }, this);
 //    private ICC_ColorSpace awtColorSpace;
     private volatile boolean initDone = false;
-    private boolean usePureJavaCMYKConversion = false;
 
     protected PDDeviceCMYK()
     {
@@ -49,24 +50,10 @@ public class PDDeviceCMYK extends PDDeviceColorSpace
             {
                 return;
             }
-            iccUtils = new IccUtils();
-            iccUtils.loadProfile("/storage/emulated/0/Android/data/com.example.test/files/ISOcoated_v2_300_bas.icc");
-            // loads the ICC color profile for CMYK
-//            ICC_Profile iccProfile = getICCProfile();
-//            if (iccProfile == null)
-//            {
-//                throw new IOException("Default CMYK color profile could not be loaded");
-//            }
-//            awtColorSpace = new ICC_ColorSpace(iccProfile);
-
-            // there is a JVM bug which results in a CMMException which appears to be a race
-            // condition caused by lazy initialization of the color transform, so we perform
-            // an initial color conversion while we're still in a static context, see PDFBOX-2184
-//            awtColorSpace.toRGB(new float[] { 0, 0, 0, 0 });
-//            usePureJavaCMYKConversion = System
-//                    .getProperty("org.apache.pdfbox.rendering.UsePureJavaCMYKConversion") != null;
-
-            // Assignment to volatile must be the LAST statement in this block!
+            if (new File(IccUtils.iccProfileDir+"/ISOcoated_v2_300_bas.icc").exists()) {
+                iccUtils = new IccUtils();
+                iccUtils.loadProfile(IccUtils.iccProfileDir+"/ISOcoated_v2_300_bas.icc");
+            }
             initDone = true;
         }
     }
@@ -119,56 +106,63 @@ public class PDDeviceCMYK extends PDDeviceColorSpace
     {
         init();
         //cmyk to lab
-        float[] data = new float[3];
-        iccUtils.applyCmyk(value,data);
-        float[] lab = toLab(data);
-        float[] xyz = labToXyz(lab);
-        float[] rgb = new float[3];
-        Log.w("ceshi","l:"+lab[0]+",a:"+lab[1]+",b:"+lab[2]);
-        Log.w("ceshi","x:"+xyz[0]+",y:"+xyz[1]+",z:"+xyz[2]);
+        if (iccUtils!=null) {
+            float[] data = new float[3];
+            iccUtils.applyCmyk(value,data);
+            float[] lab = toLab(data);
+            float[] xyz = labToXyz(lab);
 
-        rgb[2] = (xyz[0] * 3.240479f) + (xyz[1] * -1.537150f) + (xyz[2] * -.498535f);
-        rgb[1] = (xyz[0] * -.969256f) + (xyz[1] *  1.875992f) + (xyz[2] * .041556f);
-        rgb[0] = (xyz[0] * .055648f) +  (xyz[1] * -.204043f) + (xyz[2] * 1.057311f);
-
-        for (int i = 0; i < 3; i++)
-        {
-            if (rgb[i] > .0031308f)
-            {
-                rgb[i] = (1.055f * (float)Math.pow(rgb[i], (1.0f / 2.4f))) - .055f;
-            }
-            else
-            {
-                rgb[i] = rgb[i] * 12.92f;
-            }
+            return NormalColorSpace.xyzToRgb(xyz);
         }
-        Log.w("ceshi","r:"+rgb[2]+",g:"+rgb[1]+"b:,"+rgb[0]);
-
-//        rgb[0] = rgb[0] * 255.0f;
-//        rgb[1] = rgb[1] * 255.0f;
-//        rgb[2] = rgb[2] * 255.0f;
-
-        return rgb;
-//        return new float[]{1.f-Math.min(1.f,value[0]+value[3]),1.f-Math.min(1.f,value[1]+value[3]),1.f-Math.min(1.f,value[2]+value[3])};
-//        return awtColorSpace.toRGB(value);
-    }
-
-//    @Override
-    public float[] toRGB2(float[] value) {
-        return new float[]{(1-value[2])*(1-value[3]),(1-value[1])*(1-value[3]),(1-value[0])*(1-value[3])};
-    }
-
-    private float adj(float c) {
-        return c;
-//        if (Math.abs(c)<0.0031308) {
-//            return 12.92f*c;
-//        }
-//        return 1.055f*(float)Math.pow(c,0.41666)-0.055f;
+        return new float[]{(1-value[0])*(1-value[3]),(1-value[1])*(1-value[3]),(1-value[2])*(1-value[3])};
     }
 
     @Override
     public Bitmap toRGBImage(Bitmap raster) throws IOException {
-        return null;
+        init();
+        int width = raster.getWidth();
+        int height = raster.getHeight();
+
+        Bitmap rgbImage = Bitmap.createBitmap(width,height, Bitmap.Config.ARGB_8888);
+        int[] src = new int[width];
+        int test = 0;
+        for (int y = 0; y < height; y++)
+        {
+            raster.getPixels(src,0,width,0,y,width,1);
+            for (int x = 0; x < width; x++)
+            {
+                test++;
+                if (test<100) {
+                    Log.w("color_test","src[x]:"+(src[x]&0xff));
+                }
+                float[] value = new float[] {(src[x]&0xff)/255.f,(src[x]>>8&0xff)/255.f,(src[x]>>16&0xff)/255.f,(src[x]>>24&0xff)/255.f};
+                float[] rgb = toRGB(value);
+                int color = Color.argb(255,(int)(rgb[0]*255),(int)(rgb[0]*255),(int)(rgb[0]*255));
+                rgbImage.setPixel(x,y,color);
+            }
+        }
+        return rgbImage;
+    }
+
+    public Bitmap toRGBImage(byte[] raster,int width,int height) throws IOException {
+        init();
+        Bitmap rgbImage = Bitmap.createBitmap(width,height, Bitmap.Config.ARGB_8888);
+        int location = 0;
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                float[] value = new float[4];
+                for (int i=0;i<4;i++) {
+                    value[i] = ((raster[location]&0xff)/255.f);
+                    location++;
+                }
+                float[] rgb = toRGB(value);
+                int color = Color.argb(255,(int)(rgb[0]*255),(int)(rgb[1]*255),(int)(rgb[2]*255));
+                rgbImage.setPixel(x,y,color);
+            }
+        }
+        return rgbImage;
     }
 
     public float[] toLab(float[] value) {

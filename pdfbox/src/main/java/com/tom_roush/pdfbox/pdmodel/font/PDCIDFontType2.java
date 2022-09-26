@@ -261,6 +261,8 @@ public class PDCIDFontType2 extends PDCIDFont
                 }
 
                 // a non-embedded font always has a cmap (otherwise FontMapper won't load it)
+//                Log.w("ceshi","unicode.codePointAt(0)==="+unicode.codePointAt(0));
+//                Log.w("ceshi","cmap.getGlyphId=="+cmap.getGlyphId(unicode.codePointAt(0)));
                 return cmap.getGlyphId(unicode.codePointAt(0));
             }
         }
@@ -269,7 +271,6 @@ public class PDCIDFontType2 extends PDCIDFont
             // If the TrueType font program is embedded, the Type 2 CIDFont dictionary shall contain
             // a CIDToGIDMap entry that maps CIDs to the glyph indices for the appropriate glyph
             // descriptions in that font program.
-
             int cid = codeToCID(code);
             if (cid2gid != null)
             {

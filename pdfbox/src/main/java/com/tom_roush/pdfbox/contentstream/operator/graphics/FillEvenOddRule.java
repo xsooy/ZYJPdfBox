@@ -35,7 +35,7 @@ public final class FillEvenOddRule extends GraphicsOperatorProcessor
     @Override
     public void process(Operator operator, List<COSBase> operands) throws IOException
     {
-        Log.w("ceshi","FillEvenOddRule");
+//        Log.w("ceshi","FillEvenOddRule");
         context.fillPath(Path.FillType.EVEN_ODD);
     }
 

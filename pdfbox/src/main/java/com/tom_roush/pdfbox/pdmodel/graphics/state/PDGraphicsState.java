@@ -520,7 +520,6 @@ public class PDGraphicsState implements Cloneable
      */
     public void setStrokingColor(PDColor color)
     {
-        Log.w("ceshi","setStrokingColor=="+color);
         strokingColor = color;
     }
 
@@ -604,7 +603,7 @@ public class PDGraphicsState implements Cloneable
         if (!r.setPath(path, new Region(boundsRounded))) {
             Log.w("ceshi","生成区域失败222:"+boundsRounded);
         }
-        Log.w("ceshi","intersectClippingPathByScale===="+r);
+//        Log.w("ceshi","intersectClippingPathByScale===="+r);
         intersectClippingPath(r);
         // TODO: PdfBox-Android Verify correct behavior
     }

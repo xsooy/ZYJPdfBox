@@ -5,7 +5,7 @@ plugins {
 ext {
     PUBLISH_GROUP_ID = 'com.tom-roush'
     PUBLISH_ARTIFACT_ID = 'pdfbox-android'
-    PUBLISH_VERSION = 'V2.0.13.0'
+    PUBLISH_VERSION = 'V2.0.13.4'
 }
 
 android {
@@ -15,7 +15,7 @@ android {
     defaultConfig {
         minSdkVersion 23
         targetSdkVersion 31
-        versionName "V2.0.13.0"
+        versionName "V2.0.13.4"
         versionCode 1
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         testInstrumentationRunnerArgument "notAnnotation", "androidx.test.filters.FlakyTest"
@@ -56,6 +56,10 @@ android {
         androidTest {
             assets.srcDirs = ['src/test/resources']
         }
+//        main {
+//            jni.srcDirs = []
+//            jniLibs.srcDirs = ['libs']
+//        }
     }
 
     compileOptions {

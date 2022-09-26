@@ -26,9 +26,9 @@ public class ShadingContext {
     {
         this.shading = shading;
         shadingColorSpace = shading.getColorSpace();
-
+        Log.w("ceshi","shadingColorSpace==="+shadingColorSpace.getName());
         // create the output color model using RGB+alpha as color space
-        shadingColorSpace = PDDeviceCMYK.INSTANCE;
+//        shadingColorSpace = PDDeviceCMYK.INSTANCE;
 //        ColorSpace outputCS = ColorSpace.getInstance(ColorSpace.CS_sRGB);
 //        outputColorModel = new ComponentColorModel(outputCS, true, false, Transparency.TRANSLUCENT,
 //                DataBuffer.TYPE_BYTE);
@@ -48,9 +48,9 @@ public class ShadingContext {
 
         float[] rgbValues = shadingColorSpace.toRGB(values);
 //        Log.w("ceshi","hadingColorSpace.toRGB::"+rgbValues[2]);
-        normRGBValues = (int) (rgbValues[0] * 255);
+        normRGBValues = (int) (rgbValues[2] * 255);
         normRGBValues |= (int) (rgbValues[1] * 255) << 8;
-        normRGBValues |= (int) (rgbValues[2] * 255) << 16;
+        normRGBValues |= (int) (rgbValues[0] * 255) << 16;
 //        StringBuilder builder = new StringBuilder();
 //        for (float jj:rgbValues)
 //            builder.append(jj+",");

@@ -17,6 +17,8 @@
 
 package com.tom_roush.fontbox.ttf;
 
+import android.util.Log;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -133,6 +135,7 @@ public class TrueTypeCollection implements Closeable
             TrueTypeFont font = getFontAtIndex(i);
             if (font.getName().equals(name))
             {
+                Log.w("ceshi","font.getName()=="+font.getName());
                 return font;
             }
         }

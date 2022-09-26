@@ -539,6 +539,7 @@ public class PDType0Font extends PDFont implements PDVectorFont
      */
     public int codeToGID(int code) throws IOException
     {
+//        Log.w("ceshi","descendantFont:"+descendantFont.getClass().getSimpleName());
         return descendantFont.codeToGID(code);
     }
 

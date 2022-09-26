@@ -17,6 +17,8 @@
 
 package com.tom_roush.pdfbox.cos;
 
+import android.util.Log;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FilterInputStream;

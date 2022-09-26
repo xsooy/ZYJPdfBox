@@ -45,7 +45,7 @@ public class SetStrokingDeviceRGBColor extends SetStrokingColor
     {
         PDColorSpace cs = context.getResources().getColorSpace(COSName.DEVICERGB);
         context.getGraphicsState().setStrokingColorSpace(cs);
-        Log.w("ceshi","getColorSpace().getClass().getSimpleName()"+getColorSpace().getClass().getSimpleName());
+//        Log.w("ceshi","getColorSpace().getClass().getSimpleName()"+getColorSpace().getClass().getSimpleName());
         super.process(operator, arguments);
     }
 

@@ -16,6 +16,8 @@
  */
 package com.tom_roush.pdfbox.pdmodel.font;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -520,15 +522,39 @@ final class FontMapperImpl implements FontMapper
 
             String collection = cidSystemInfo.getRegistry() + "-" + cidSystemInfo.getOrdering();
 
+            Log.w("ceshi","cidSystemInfo.getOrdering():"+cidSystemInfo.getOrdering());
             if (collection.equals("Adobe-GB1") || collection.equals("Adobe-CNS1") ||
                 collection.equals("Adobe-Japan1") || collection.equals("Adobe-Korea1"))
             {
                 // try automatic substitutes via character collection
                 PriorityQueue<FontMatch> queue = getFontMatches(fontDescriptor, cidSystemInfo);
                 FontMatch bestMatch = queue.poll();
+//                Log.w("ceshi","fontMatch.info::"+bestMatch.info.toString());
+//                Log.w("ceshi","fontMatch.score::"+bestMatch.score);
                 if (bestMatch != null)
                 {
+//                    double length = bestMatch.score;
+//                    for (FontMatch fontMatch:queue) {
+//                        switch (cidSystemInfo.getOrdering()) {
+//                            case "Japan1":
+//                                if (fontMatch.info.getPostScriptName().contains("jp")) {
+//                                    fontMatch.score+=50;
+//                                }
+//                                break;
+//                        }
+////                        Log.w("ceshi","fontMatch.info::"+fontMatch.info.toString());
+////                        Log.w("ceshi","fontMatch.score::"+fontMatch.score);
+////                        Log.w("ceshi","fontMatch.score::"+fontMatch.info.getFile().length());
+//                        if (fontMatch.info.getFont()!=null&&length<fontMatch.score) {
+//                            length = fontMatch.score;
+//                            bestMatch = fontMatch;
+//                        }
+//                    }
+                    Log.w("ceshi","fontMatch.info::"+bestMatch.info.toString());
+                    Log.w("ceshi","fontMatch.score::"+bestMatch.score);
+                    Log.w("ceshi","fontMatch.score::"+bestMatch.info.getFile().length());
                     FontBoxFont font = bestMatch.info.getFont();
+//                    Log.w("ceshi","FontBoxFont::"+font.getClass().getSimpleName());
                     if (font instanceof OpenTypeFont)
                     {
                         return new CIDFontMapping((OpenTypeFont)font, null, true);
@@ -682,6 +708,11 @@ final class FontMapperImpl implements FontMapper
             long CHINESE_TRADITIONAL = 1 << 20;
             long KOREAN_JOHAB = 1 << 21;
 
+            if ("MalgunGothic-Semilight".equals(info.getPostScriptName()))
+            {
+                // PDFBOX-4793 and PDF.js 10699: This font has only Korean, but has bits 17-21 set.
+                codePageRange &= ~(JIS_JAPAN | CHINESE_SIMPLIFIED | CHINESE_TRADITIONAL);
+            }
             if (cidSystemInfo.getOrdering().equals("GB1") &&
                 (codePageRange & CHINESE_SIMPLIFIED) == CHINESE_SIMPLIFIED)
             {

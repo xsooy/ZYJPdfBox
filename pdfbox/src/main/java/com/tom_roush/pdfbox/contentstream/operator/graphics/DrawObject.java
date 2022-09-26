@@ -16,6 +16,8 @@
  */
 package com.tom_roush.pdfbox.contentstream.operator.graphics;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.util.List;
 import com.tom_roush.pdfbox.contentstream.operator.MissingOperandException;
@@ -50,6 +52,7 @@ public final class DrawObject extends GraphicsOperatorProcessor
             return;
         }
         COSName objectName = (COSName) base0;
+        Log.w("ceshi","objectName:"+objectName.getName());
         PDXObject xobject = context.getResources().getXObject(objectName);
 
         if (xobject == null)
@@ -58,15 +61,18 @@ public final class DrawObject extends GraphicsOperatorProcessor
         }
         else if (xobject instanceof PDImageXObject)
         {
+            Log.w("ceshi","DrawObject1111");
             PDImageXObject image = (PDImageXObject)xobject;
             context.drawImage(image);
         }
         else if (xobject instanceof PDTransparencyGroup)
         {
+            Log.w("ceshi","DrawObject2222");
             getContext().showTransparencyGroup((PDTransparencyGroup) xobject);
         }
         else if (xobject instanceof PDFormXObject)
         {
+            Log.w("ceshi","DrawObject3333");
             getContext().showForm((PDFormXObject) xobject);
         }
     }

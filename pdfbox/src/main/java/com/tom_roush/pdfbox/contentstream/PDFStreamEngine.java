@@ -303,7 +303,7 @@ public abstract class PDFStreamEngine
     protected void processAnnotation(PDAnnotation annotation, PDAppearanceStream appearance)
         throws IOException
     {
-        Log.w("ceshi","processAnnotation");
+//        Log.w("ceshi","processAnnotation");
         PDResources parent = pushResources(appearance);
         Stack<PDGraphicsState> savedStack = saveGraphicsStack();
 
@@ -620,6 +620,9 @@ public abstract class PDFStreamEngine
      * @param array array of encoded text strings and adjustments
      * @throws IOException if there was an error showing the text
      */
+
+//    int test = 0;
+
     public void showTextStrings(COSArray array) throws IOException
     {
         PDTextState textState = getGraphicsState().getTextState();
@@ -656,7 +659,7 @@ public abstract class PDFStreamEngine
             else if(obj instanceof COSString)
             {
                 byte[] string = ((COSString)obj).getBytes();
-                Log.w("ceshi","showText222:"+new String(string, StandardCharsets.US_ASCII));
+//                Log.w("ceshi","showText222:"+new String(string, StandardCharsets.UTF_16BE));
                 showText(string);
             }
             else
@@ -717,6 +720,11 @@ public abstract class PDFStreamEngine
             // decode a character
             int before = in.available();
             int code = font.readCode(in);
+//            test++;
+//            if (test>100) {
+//                return;
+//            }
+//            Log.w("ceshi","code::"+code);
             int codeLength = before - in.available();
             String unicode = font.toUnicode(code);
 
@@ -732,7 +740,7 @@ public abstract class PDFStreamEngine
             // text rendering matrix (text space -> device space)
             Matrix ctm = state.getCurrentTransformationMatrix();
             Matrix textRenderingMatrix = parameters.multiply(textMatrix).multiply(ctm);
-
+//            Log.w("ceshi","textRenderingMatrix===="+textRenderingMatrix);
             // get glyph's position vector if this is vertical text
             // changes to vertical text should be tested with PDFBOX-2294 and PDFBOX-1422
             if (font.isVertical())
@@ -788,7 +796,7 @@ public abstract class PDFStreamEngine
     protected void showGlyph(Matrix textRenderingMatrix, PDFont font, int code, String unicode,
         Vector displacement) throws IOException
     {
-        //Log.w("ceshi","解析文字："+unicode);
+//        Log.w("ceshi","解析文字："+unicode);
         if (font instanceof PDType3Font)
         {
             showType3Glyph(textRenderingMatrix, (PDType3Font)font, code, unicode, displacement);

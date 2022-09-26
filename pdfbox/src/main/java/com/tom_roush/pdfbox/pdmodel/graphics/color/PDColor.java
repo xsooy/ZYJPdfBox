@@ -58,7 +58,7 @@ public final class PDColor
 
             // pattern name (required)
             patternName = (COSName)array.get(array.size() - 1);
-            Log.w("ceshi","patternName:"+patternName.getName());
+//            Log.w("ceshi","patternName:"+patternName.getName());
         }
         else
         {
