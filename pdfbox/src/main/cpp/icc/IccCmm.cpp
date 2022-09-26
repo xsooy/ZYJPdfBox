@@ -4100,6 +4100,7 @@ icStatusCMM CIccCmm::RemoveAllIO()
   for (i=m_Xforms->begin(); i!=m_Xforms->end(); i++) {
     i->ptr->RemoveIO();
   }
+  m_Xforms->clear();
 
   return icCmmStatOk;
 }

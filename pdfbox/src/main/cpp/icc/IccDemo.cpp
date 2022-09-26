@@ -11,25 +11,28 @@
 #define TAG "IccCmm_ceshi"
 #define pri_debug(format, args...) __android_log_print(ANDROID_LOG_DEBUG, TAG, "[%s:%d]" format, basename(__FILE__), __LINE__, ##args)
 
-CIccCmm cmm;
+CIccCmm *cmm = NULL;
 icFloatNumber Pixels[16];
 
 extern "C"{
 
     JNIEXPORT jint JNICALL Java_com_xsooy_icc_IccUtils_loadProfile(JNIEnv *env, jobject thiz, jstring path) {
-        cmm.RemoveAllIO();
-        if (cmm.GetNumXforms()!=0) {
+        if (cmm != NULL) {
+            delete cmm;
+        }
+        cmm = new CIccCmm;
+        if (cmm->GetNumXforms()!=0) {
             pri_debug("profile已加载");
             return 1;
         }
         const char *nativeString = env->GetStringUTFChars(path, 0);
-        if (cmm.AddXform(nativeString, (icRenderingIntent)0)) {
+        if (cmm->AddXform(nativeString, (icRenderingIntent)0)) {
             pri_debug("合入失败%s",nativeString);
 //            printf("Invalid Profile:  %s\n", szSrcProfile);
             return -1;
         }
         pri_debug("合入成功%s",nativeString);
-        if (cmm.Begin() != icCmmStatOk) {
+        if (cmm->Begin() != icCmmStatOk) {
             pri_debug("合入失败222%s",nativeString);
 //            printf("Invalid Profile:\n  %s\n  %s'\n", szSrcProfile, szDstProfile);
             return false;
@@ -53,56 +56,34 @@ icUInt8Number* ConvertJByteaArrayToChars(JNIEnv *env, jbyteArray bytearray)
 }
 
 JNIEXPORT jint JNICALL Java_com_xsooy_icc_IccUtils_loadProfileByData(JNIEnv *env, jobject thiz, jbyteArray data) {
-    cmm.RemoveAllIO();
+    if (cmm != NULL) {
+        delete cmm;
+    }
+    cmm = new CIccCmm;
     icUInt8Number *pmsg = ConvertJByteaArrayToChars(env,data);
     int chars_len = env->GetArrayLength(data);
     CIccProfile* cIccProfile = OpenIccProfile(pmsg, chars_len);
-    if (cmm.AddXform(cIccProfile, (icRenderingIntent)0)) {
+    if (cIccProfile==NULL) {
+        pri_debug("创建IccData失败");
+        return -1;
+    }
+    if (cmm->AddXform(cIccProfile, (icRenderingIntent)0)) {
         pri_debug("读取IccData失败");
         return -1;
     }
     pri_debug("读取IccData成功");
-    pri_debug("piex4444:%d",cmm.GetSourceSpace());
-    if (cmm.Begin() != icCmmStatOk) {
+    pri_debug("piex4444:%d",cmm->GetSourceSpace());
+    if (cmm->Begin() != icCmmStatOk) {
         pri_debug("启动Icc失败");
         return false;
     }
-    pri_debug("piex4444:%d",cmm.GetDestSpace());
-    return cmm.GetSourceSpace();
+    pri_debug("piex4444:%d",cmm->GetDestSpace());
+    return cmm->GetSourceSpace();
 }
-
-//JNIEXPORT jint JNICALL Java_com_xsooy_icc_IccUtils_loadProfile2(JNIEnv *env, jobject thiz, jstring path,jstring path2) {
-//    if (cmm.GetNumXforms()!=0) {
-//        pri_debug("profile已加载");
-//        return 1;
-//    }
-//    const char *nativeString = env->GetStringUTFChars(path, 0);
-//    const char *nativeString2 = env->GetStringUTFChars(path2, 0);
-//    if (cmm.AddXform(nativeString, (icRenderingIntent)0)) {
-//        pri_debug("合入失败%s",nativeString);
-//            printf("Invalid Profile:  %s\n", szSrcProfile);
-//        return -1;
-//    }
-//    if (cmm.AddXform(nativeString2)) {
-//        pri_debug("合入失败%s",nativeString2);
-//            printf("Invalid Profile:  %s\n", szSrcProfile);
-//        return -1;
-//    }
-//    if (cmm.Begin() != icCmmStatOk) {
-//            printf("Invalid Profile:\n  %s\n  %s'\n", szSrcProfile, szDstProfile);
-//        return false;
-//    }
-//    return 0;
-//}
 
     JNIEXPORT jfloat JNICALL Java_com_xsooy_icc_IccUtils_apply(JNIEnv *env, jobject thiz, jfloat pixel) {
         Pixels[0] = (float) pixel;
-
-//        pri_debug("piex3333:%d",cmm.GetNumXforms());
-//        pri_debug("piex4444:%f",*Pixels);
-//        pri_debug("piex4444:%d",cmm.GetSourceSpace());
-
-        cmm.Apply(Pixels, Pixels);
+        cmm->Apply(Pixels, Pixels);
         return Pixels[0];
     }
 
@@ -111,7 +92,7 @@ JNIEXPORT void JNICALL Java_com_xsooy_icc_IccUtils_applyGray(JNIEnv *env, jobjec
     jfloat *parray = env->GetFloatArrayElements(array, &isCopy);
     Pixels[0] = float (parray[0]);
 
-    cmm.Apply(Pixels, Pixels);
+    cmm->Apply(Pixels, Pixels);
 
     env->SetFloatArrayRegion(outArray,0,3,Pixels);
 }
@@ -119,18 +100,18 @@ JNIEXPORT void JNICALL Java_com_xsooy_icc_IccUtils_applyGray(JNIEnv *env, jobjec
     JNIEXPORT void JNICALL Java_com_xsooy_icc_IccUtils_applyCmyk(JNIEnv *env, jobject thiz, jfloatArray array,jfloatArray outArray) {
         jboolean isCopy = JNI_FALSE;
         jfloat *parray = env->GetFloatArrayElements(array, &isCopy);
-        jfloat *outparray = env->GetFloatArrayElements(outArray, &isCopy);
+//        jfloat *outparray = env->GetFloatArrayElements(outArray, &isCopy);
         Pixels[0] = float (parray[0]);
         Pixels[1] = float (parray[1]);
         Pixels[2] = float (parray[2]);
         Pixels[3] = float (parray[3]);
-//    pri_debug("piex3333:%d",cmm.GetNumXforms());
+//    pri_debug("piex3333:%d",cmm->GetNumXforms());
 //        pri_debug("piex4444:%f",*Pixels);
-//        pri_debug("piex4444:%d",cmm.GetSourceSpace());
-//        pri_debug("piex4444:%d",cmm.GetDestSpace());
+//        pri_debug("piex4444:%d",cmm->GetSourceSpace());
+//        pri_debug("piex4444:%d",cmm->GetDestSpace());
 
         //change data to 'lab'
-        cmm.Apply(Pixels, Pixels);
+        cmm->Apply(Pixels, Pixels);
 
 //        pri_debug("result:%f,%f,%f,%f",Pixels[0],Pixels[1],Pixels[2],Pixels[3]);
         env->SetFloatArrayRegion(outArray,0,3,Pixels);

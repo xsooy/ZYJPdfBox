@@ -24,6 +24,51 @@ public class NormalColorSpace {
         return value;
     }
 
+    public static float[] toLab(float[] value) {
+        float[] lab = new float[3];
+        for (int i=0;i<3;i++) {
+            lab[i] = (getMaxValue(TYPE_Lab,i)-getMinValue(TYPE_Lab,i))*value[i]+getMinValue(TYPE_Lab,i);
+        }
+//        lab[0] = value[0] * 100;
+//        float min = -128.0f;
+//        float max = 127.0f;
+//        lab[1] = (max-min)*value[1]+min;
+//        lab[2] = (max-min)*value[2]+min;
+        return lab;
+    }
+
+    public static float[] labToXyz(float[] value) {
+        float[] xyz = new float[3];
+        xyz[1] = (value[0]+16.f)/116.f;
+        xyz[0] = value[1]/500.f+xyz[1];
+        xyz[2] = xyz[1]-value[2]/200.f;
+
+        for (int i = 0; i < 3; i++)
+        {
+            float pow = xyz[i] * xyz[i] * xyz[i];
+            float ratio = (6.0f / 29.0f);
+            if (xyz[i] > ratio)
+            {
+                xyz[i] = pow;
+            }
+            else
+            {
+                xyz[i] = (3.0f * (6.0f / 29.0f) * (6.0f / 29.0f) * (xyz[i] - (4.0f / 29.0f)));
+            }
+        }
+
+        xyz[0] = xyz[0] * (95.047f);
+        xyz[1] = xyz[1] * (100.0f);
+        xyz[2] = xyz[2] * (108.883f);
+
+        xyz[0] = xyz[0] / 100f;
+        xyz[1] = xyz[1] / 100f;
+        xyz[2] = xyz[2] / 100f;
+
+        return xyz;
+    }
+
+
     //x,y,z To r=[0],g=[1],b=[2]
     public static float[] xyzToRgb(float[] xyz) {
         float[] rgb = new float[3];

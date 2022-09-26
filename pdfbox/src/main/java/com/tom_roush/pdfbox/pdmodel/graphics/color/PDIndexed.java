@@ -88,6 +88,7 @@ public final class PDIndexed extends PDSpecialColorSpace
         array = indexedArray;
         // don't call getObject(1), we want to pass a reference if possible
         // to profit from caching (PDFBOX-4149)
+        Log.w("ceshi","PDIndexed---baseColorSpace");
         baseColorSpace = PDColorSpace.create(array.get(1), resources);
         readColorTable();
         initRgbColorTable();
@@ -214,10 +215,15 @@ public final class PDIndexed extends PDSpecialColorSpace
 
     public Bitmap toRGBImage(int[] raster,int width,int height) throws IOException {
         Bitmap rgbImage = Bitmap.createBitmap(width,height, Bitmap.Config.ARGB_8888);
+        int test = 0;
         for (int y = 0; y < height; y++)
         {
             for (int x = 0; x < width; x++)
             {
+                test++;
+                if (test<100) {
+                    Log.w("color_test","src[x]:"+raster[test]);
+                }
                 int index = Math.min(raster[x+y*width], actualMaxIndex);
                 int color = Color.argb(255,rgbColorTable[index][0],rgbColorTable[index][1],rgbColorTable[index][2]);
                 rgbImage.setPixel(x,y,color);

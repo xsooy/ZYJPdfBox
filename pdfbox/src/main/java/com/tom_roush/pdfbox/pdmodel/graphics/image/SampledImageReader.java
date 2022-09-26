@@ -24,24 +24,22 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.Log;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
-
 import com.tom_roush.harmony.javax.imageio.stream.ImageInputStream;
 import com.tom_roush.harmony.javax.imageio.stream.MemoryCacheImageInputStream;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.filter.DecodeOptions;
 import com.tom_roush.pdfbox.io.IOUtils;
-import com.tom_roush.pdfbox.io.RandomAccessRead;
-import com.tom_roush.pdfbox.pdmodel.graphics.color.PDCalRGB;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceCMYK;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDICCBased;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDIndexed;
-import com.xsooy.icc.JpegUtils;
+import com.xsooy.jpeg.JpegUtils;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 /**
  * Reads a sampled image from a PDF file.
@@ -190,6 +188,7 @@ final class SampledImageReader
 
         // get parameters, they must be valid or have been repaired
         final PDColorSpace colorSpace = pdImage.getColorSpace();
+        Log.w("ceshi","colorSpace:"+colorSpace.getClass().getSimpleName());
         final int numComponents = colorSpace.getNumberOfComponents();
         final int width = (int) Math.ceil(clipped.width() / subsampling);
         final int height = (int) Math.ceil(clipped.height() / subsampling);
@@ -294,17 +293,13 @@ final class SampledImageReader
             byte value1;
             if (isIndexed || decode[0] < decode[1])
             {
-//                value0 = 0;
-//                value1 = (byte) 255;
-                value0 = (byte) 255;
-                value1 = 0;
+                value0 = 0;
+                value1 = (byte) 255;
             }
             else
             {
-//                value0 = (byte) 255;
-//                value1 = 0;
-                value0 = 0;
-                value1 = (byte) 255;
+                value0 = (byte) 255;
+                value1 = 0;
             }
             byte[] buff = new byte[rowLen];
             int idx = 0;
@@ -345,6 +340,9 @@ final class SampledImageReader
             buffer.rewind();
             raster.copyPixelsFromBuffer(buffer);
 
+            if (pdImage.getColorSpace() instanceof PDICCBased) {
+                return pdImage.getColorSpace().toRGBImage(raster);
+            }
             // use the color space to convert the image to RGB
 //            return colorSpace.toRGBImage(raster);
             return raster;
@@ -396,18 +394,12 @@ final class SampledImageReader
             final int numComponents = pdImage.getColorSpace().getNumberOfComponents();
             // get the raster's underlying byte buffer
             int[] banks = new int[width * height];
-            Log.w("ceshi","banks.length==="+banks.length*numComponents);
 //            byte[][] banks = ((DataBufferByte) raster.getDataBuffer()).getBankData();
             byte[] tempBytes = new byte[numComponents * inputWidth];
             // compromise between memory and time usage:
             // reading the whole image consumes too much memory
             // reading one pixel at a time makes it slow in our buffering infrastructure
-            int test = 0;
             int i = 0;
-
-            byte[] test11 = new byte[width * height*numComponents];
-            long inputResult = IOUtils.populateBuffer(input, test11);
-            Log.w("ceshi","inputResult==="+inputResult);
 
             for (int y = 0; y < starty + scanHeight; ++y)
             {
@@ -421,8 +413,7 @@ final class SampledImageReader
                 {
                     int tempBytesIdx = x * numComponents;
                     if (numComponents == 4) {
-                        test++;
-
+//                        test++;
 //                        if (test<100)
 //                            Log.w("ceshi","tempBytes[tempBytesIdx]&0xff==="+(tempBytes[tempBytesIdx]));
 //                        Log.w("ceshi",String.format("cmyk:%f,%f,%f,%f",((tempBytes[tempBytesIdx]&0xff)/255.f),((tempBytes[tempBytesIdx]&0xff)/255.f),((tempBytes[tempBytesIdx]&0xff)/255.f),((tempBytes[tempBytesIdx]&0xff)/255.f)));
@@ -437,12 +428,15 @@ final class SampledImageReader
                     else if (numComponents == 1)
                     {
                         int in = tempBytes[tempBytesIdx] & 0xFF;
-                        banks[i] = in;
+                        if (pdImage.getColorSpace() instanceof PDIndexed){
+                            banks[i] = in;
+                        } else {
+                            banks[i] = Color.argb(in,in,in,in);
+                        }
                     }
                     ++i;
                 }
             }
-
             if (pdImage.getColorSpace() instanceof PDIndexed){
                 return ((PDIndexed)pdImage.getColorSpace()).toRGBImage(banks,width,height);
             }
@@ -549,7 +543,6 @@ final class SampledImageReader
                             // below cannot be reversed by the color space without it having
                             // knowledge of the number of bits per component
                             srcColorValues[c] = (byte) Math.round(output);
-                            Log.w("color_test","output==="+output);
                         } else {
                             // interpolate to TYPE_BYTE
                             int outputByte = Math.round(((output - Math.min(dMin, dMax)) /
@@ -581,7 +574,6 @@ final class SampledImageReader
             }
 
             if (pdImage.getColorSpace() instanceof PDIndexed) {
-                Log.w("color_test","PDIndexedPDIndexed");
                 return ((PDIndexed)pdImage.getColorSpace()).toRGBImage(banks,width,height);
             }
             Bitmap raster = Bitmap.createBitmap(width, height,Bitmap.Config.ARGB_8888);

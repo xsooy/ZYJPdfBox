@@ -929,6 +929,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         canvas.save();
 //        Log.w("ceshi","绘制图片==="+(int)(getGraphicsState().getNonStrokeAlphaConstant()*255));
         paint.setAlpha((int)(getGraphicsState().getNonStrokeAlphaConstant()*255));
+        paint.setColor(getNonStrokingColor());
 //        graphics.setComposite(getGraphicsState().getNonStrokingJavaComposite());
         setClip2();
         AffineTransform imageTransform = new AffineTransform(at);

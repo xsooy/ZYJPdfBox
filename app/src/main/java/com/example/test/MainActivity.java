@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
             File file = new File(path);
             ParcelFileDescriptor fileDescriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY);
             PdfRenderer pdfRenderer = new PdfRenderer(fileDescriptor);
-            PdfRenderer.Page currentPage = pdfRenderer.openPage(1);
+            PdfRenderer.Page currentPage = pdfRenderer.openPage(0);
             float scale = 300/72f;
             int width = (int) (currentPage.getWidth()*scale);
             int height = (int) (currentPage.getHeight()*scale);
@@ -95,15 +95,15 @@ public class MainActivity extends AppCompatActivity {
             currentPage.close();
             pdfRenderer.close();
             fileDescriptor.canDetectErrors();
-//            if (!isSys) {
-//                PDDocument document = PDDocument.load(new File(path));
-////            PDPageTree pdPageTree = document.getPages();
-//                YJPDFRenderer renderer = new YJPDFRenderer(document);
-//                renderer.renderImage(bitmap,0);
-//                String filePath = getPreviewDir()+"temp.jpg";
-//                saveBitmap(bitmap,filePath);
-//                document.close();
-//            }
+            if (!isSys) {
+                PDDocument document = PDDocument.load(new File(path));
+//            PDPageTree pdPageTree = document.getPages();
+                YJPDFRenderer renderer = new YJPDFRenderer(document);
+                renderer.renderImage(bitmap,0);
+                String filePath = getPreviewDir()+"temp.jpg";
+                saveBitmap(bitmap,filePath);
+                document.close();
+            }
             imageView.setImageBitmap(bitmap);
         } catch (IOException e) {
             e.printStackTrace();
@@ -130,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
                     paint.setColor(Color.WHITE);
                     paint.setStyle(Paint.Style.FILL);
                     PDFRenderer renderer = new PDFRenderer(document);
-                    Bitmap bitmap = renderer.renderImageWithDPI(1, 300);
+                    Bitmap bitmap = renderer.renderImageWithDPI(0, 300);
                     String filePath = getPreviewDir()+"1.jpg";
                     saveBitmap(bitmap,filePath);
                     imageView.post(()->{

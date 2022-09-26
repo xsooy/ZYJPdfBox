@@ -34,18 +34,18 @@ public final class PDICCBased extends PDCIEBasedColorSpace
 
     private final PDStream stream;
     private int numberOfComponents = -1;
-//    private ICC_Profile iccProfile;
+    //    private ICC_Profile iccProfile;
     private PDColorSpace alternateColorSpace;
-//    private ICC_ColorSpace awtColorSpace;
+    //    private ICC_ColorSpace awtColorSpace;
     private PDColor initialColor;
     private boolean isRGB = false;
     // allows to force using alternate color space instead of ICC color space for performance
     // reasons with LittleCMS (LCMS), see PDFBOX-4309
     // WARNING: do not activate this in a conforming reader
     private boolean useOnlyAlternateColorSpace = false;
-//    private static final boolean IS_KCMS;
+    //    private static final boolean IS_KCMS;
     private IccUtils iccUtils;
-    private int colorType = NormalColorSpace.TYPE_RGB;
+    private int colorType = TYPE_RGB;
 
 //    static
 //    {
@@ -205,23 +205,24 @@ public final class PDICCBased extends PDCIEBasedColorSpace
                 Log.w("PdfBox-Android","Error initializing alternate color space: " + e.getLocalizedMessage());
             }
         }
-        try (InputStream input = this.stream.createInputStream())
+        try
         {
+            InputStream input = this.stream.createInputStream();
             // if the embedded profile is sRGB then we can use Java's built-in profile, which
             // results in a large performance gain as it's our native color space, see PDFBOX-2587
 //            ICC_Profile profile;
             iccUtils = new IccUtils();
 
-            colorType = NormalColorSpace.getIccColorType(iccUtils.loadProfileByData(getProfileDataFromStream(input)));
+            colorType = IccUtils.getIccColorType(iccUtils.loadProfileByData(getProfileDataFromStream(input)));
             switch (colorType) {
-                case NormalColorSpace.TYPE_GRAY:
+                case TYPE_GRAY:
                     numberOfComponents = 1;
                     break;
-                case NormalColorSpace.TYPE_RGB:
+                case TYPE_RGB:
                     numberOfComponents = 3;
                     isRGB = true;
                     break;
-                case NormalColorSpace.TYPE_CMYK:
+                case TYPE_CMYK:
                     numberOfComponents = 4;
                     break;
             }
@@ -307,17 +308,17 @@ public final class PDICCBased extends PDCIEBasedColorSpace
         if (iccUtils!=null) {
             float[] xyz = new float[3];
             iccUtils.applyGray(value,xyz);
-            return NormalColorSpace.xyzToRgb(xyz);
+            return xyzToRgb(xyz);
         }
 //        if (awtColorSpace != null)
 //        {
-            // PDFBOX-2142: clamp bad values
-            // WARNING: toRGB is very slow when used with LUT-based ICC profiles
+        // PDFBOX-2142: clamp bad values
+        // WARNING: toRGB is very slow when used with LUT-based ICC profiles
 //            return awtColorSpace.toRGB(clampColors(awtColorSpace, value));
 //        }
 //        else
 //        {
-            return alternateColorSpace.toRGB(value);
+        return alternateColorSpace.toRGB(value);
 //        }
     }
 
@@ -325,19 +326,24 @@ public final class PDICCBased extends PDCIEBasedColorSpace
     public Bitmap toRGBImage(Bitmap raster) throws IOException {
         int width = raster.getWidth();
         int height = raster.getHeight();
-
         Bitmap rgbImage = Bitmap.createBitmap(width,height, Bitmap.Config.ARGB_8888);
-        int[] src = new int[width];
-        for (int y = 0; y < height; y++)
-        {
-            raster.getPixels(src,0,width,0,y,width,1);
-            for (int x = 0; x < width; x++)
-            {
-                Log.w("ceshi","fff==="+src[x]);
-                rgbImage.setPixel(x,y,src[x]);
-            }
+        switch (colorType) {
+            case TYPE_GRAY:
+                int[] src = new int[width];
+                for (int y = 0; y < height; y++)
+                {
+                    raster.getPixels(src,0,width,0,y,width,1);
+                    for (int x = 0; x < width; x++)
+                    {
+                        src[x] = Color.argb(255,src[x]>>24&0xff,src[x]>>24&0xff,src[x]>>24&0xff);
+                    }
+                    rgbImage.setPixels(src,0,width,0,y,width,1);
+                }
+                return rgbImage;
+            default:
+                //TODO:PdfBox-Android
+                return raster;
         }
-        return rgbImage;
     }
 
 //    @Override
@@ -411,8 +417,8 @@ public final class PDICCBased extends PDCIEBasedColorSpace
             float[] decode = new float[n * 2];
             for (int i = 0; i < n; i++)
             {
-                decode[i * 2] = NormalColorSpace.getMinValue(colorType,i);
-                decode[i * 2 + 1] = NormalColorSpace.getMaxValue(colorType,i);
+                decode[i * 2] = getMinValue(colorType,i);
+                decode[i * 2 + 1] = getMaxValue(colorType,i);
             }
             return decode;
         }
@@ -508,8 +514,8 @@ public final class PDICCBased extends PDCIEBasedColorSpace
     /**
      * Returns the type of the color space in the ICC profile. If the ICC profile is invalid, the
      * type of the alternate colorspace is returned, which will be one of
-     * {@link NormalColorSpace#TYPE_GRAY TYPE_GRAY}, {@link NormalColorSpace#TYPE_RGB TYPE_RGB},
-     * {@link NormalColorSpace#TYPE_CMYK TYPE_CMYK}, or -1 if that one is invalid.
+     * {@link #TYPE_GRAY TYPE_GRAY}, {@link #TYPE_RGB TYPE_RGB},
+     * {@link #TYPE_CMYK TYPE_CMYK}, or -1 if that one is invalid.
      *
      * @return an ICC color space type. and the static values of
      * {@link ColorSpace} for more details.
@@ -525,11 +531,11 @@ public final class PDICCBased extends PDCIEBasedColorSpace
         switch (alternateColorSpace.getNumberOfComponents())
         {
             case 1:
-                return NormalColorSpace.TYPE_GRAY;
+                return TYPE_GRAY;
             case 3:
-                return NormalColorSpace.TYPE_RGB;
+                return TYPE_RGB;
             case 4:
-                return NormalColorSpace.TYPE_CMYK;
+                return TYPE_CMYK;
             default:
                 // should not happen as all ICC color spaces in PDF must have 1,3, or 4 components
                 return -1;

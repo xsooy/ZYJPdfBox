@@ -514,7 +514,7 @@ public abstract class PDFStreamEngine
             }
             else if (token instanceof Operator)
             {
-//                Log.w("ceshi","Operator:"+((Operator) token).getName());
+                Log.w("ceshi","Operator:"+((Operator) token).getName());
                 processOperator((Operator) token, arguments);
                 arguments = new ArrayList<COSBase>();
             }

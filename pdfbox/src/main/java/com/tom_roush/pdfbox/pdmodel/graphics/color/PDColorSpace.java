@@ -23,6 +23,7 @@ import java.io.IOException;
 
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSObject;
 import com.tom_roush.pdfbox.pdmodel.MissingResourceException;
@@ -38,6 +39,17 @@ import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
  */
 public abstract class PDColorSpace implements COSObjectable
 {
+
+    public static final int TYPE_XYZ = 0;
+
+    public static final int TYPE_Lab = 1;
+
+    public static final int TYPE_RGB = 5;
+
+    public static final int TYPE_GRAY = 6;
+
+    public static final int TYPE_CMYK = 9;
+
     /**
      * Creates a color space given a name or array.
      * @param colorSpace the color space COS object
@@ -60,8 +72,8 @@ public abstract class PDColorSpace implements COSObjectable
      * @throws IOException if the color space is unknown or cannot be created
      */
     public static PDColorSpace create(COSBase colorSpace,
-        PDResources resources)
-        throws IOException
+                                      PDResources resources)
+            throws IOException
     {
         return create(colorSpace, resources, false);
     }
@@ -79,9 +91,9 @@ public abstract class PDColorSpace implements COSObjectable
      * @throws IOException if the color space is unknown or cannot be created.
      */
     public static PDColorSpace create(COSBase colorSpace,
-        PDResources resources,
-        boolean wasDefault)
-        throws IOException
+                                      PDResources resources,
+                                      boolean wasDefault)
+            throws IOException
     {
         if (colorSpace instanceof COSObject)
         {
@@ -90,24 +102,23 @@ public abstract class PDColorSpace implements COSObjectable
         else if (colorSpace instanceof COSName)
         {
             COSName name = (COSName)colorSpace;
-
-//            Log.w("ceshi","COSName:"+name.getName());
+            Log.w("ceshi","name==="+name);
             // default color spaces
             if (resources != null)
             {
                 COSName defaultName = null;
                 if (name.equals(COSName.DEVICECMYK) &&
-                    resources.hasColorSpace(COSName.DEFAULT_CMYK))
+                        resources.hasColorSpace(COSName.DEFAULT_CMYK))
                 {
                     defaultName = COSName.DEFAULT_CMYK;
                 }
                 else if (name.equals(COSName.DEVICERGB) &&
-                    resources.hasColorSpace(COSName.DEFAULT_RGB))
+                        resources.hasColorSpace(COSName.DEFAULT_RGB))
                 {
                     defaultName = COSName.DEFAULT_RGB;
                 }
                 else if (name.equals(COSName.DEVICEGRAY) &&
-                    resources.hasColorSpace(COSName.DEFAULT_GRAY))
+                        resources.hasColorSpace(COSName.DEFAULT_GRAY))
                 {
                     defaultName = COSName.DEFAULT_GRAY;
                 }
@@ -121,9 +132,9 @@ public abstract class PDColorSpace implements COSObjectable
             // built-in color spaces
             if (name == COSName.DEVICECMYK)
             {
-                return PDDeviceCMYK.INSTANCE;
-//                Log.e("PdfBox-Android", "Unsupported color space kind: " + name + ". Will try DeviceRGB instead");
-//                return PDDeviceRGB.INSTANCE;
+//                return PDDeviceCMYK.INSTANCE;
+                Log.e("PdfBox-Android", "Unsupported color space kind: " + name + ". Will try DeviceRGB instead");
+                return PDDeviceRGB.INSTANCE;
             }
             else if (name == COSName.DEVICERGB)
             {
@@ -135,10 +146,9 @@ public abstract class PDColorSpace implements COSObjectable
             }
             else if (name == COSName.PATTERN)
             {
-//                Log.w("ceshi","创建PATTERN");
-                return new PDPattern(resources);
-//                Log.e("PdfBox-Android", "Unsupported color space kind: " + name + ". Will try DeviceRGB instead");
-//                return PDDeviceRGB.INSTANCE;
+//                return new PDPattern(resources);
+                Log.e("PdfBox-Android", "Unsupported color space kind: " + name + ". Will try DeviceRGB instead");
+                return PDDeviceRGB.INSTANCE;
             }
             else if (resources != null)
             {
@@ -171,15 +181,15 @@ public abstract class PDColorSpace implements COSObjectable
 
             if (name == COSName.CALGRAY)
             {
-                return new PDCalGray(array); //TODO: PdfBox-Android
-//                Log.e("PdfBox-Android", "Unsupported color space kind: " + name + ". Will try DeviceRGB instead");
-//                return PDDeviceRGB.INSTANCE;
+//                return new PDCalGray(array); TODO: PdfBox-Android
+                Log.e("PdfBox-Android", "Unsupported color space kind: " + name + ". Will try DeviceRGB instead");
+                return PDDeviceRGB.INSTANCE;
             }
             else if (name == COSName.CALRGB)
             {
-                return new PDCalRGB(array);
-//                Log.e("PdfBox-Android", "Unsupported color space kind: " + name + ". Will try DeviceRGB instead");
-//                return PDDeviceRGB.INSTANCE;
+//                return new PDCalRGB(array);
+                Log.e("PdfBox-Android", "Unsupported color space kind: " + name + ". Will try DeviceRGB instead");
+                return PDDeviceRGB.INSTANCE;
             }
             else if (name == COSName.DEVICEN)
             {
@@ -202,8 +212,6 @@ public abstract class PDColorSpace implements COSObjectable
             else if (name == COSName.ICCBASED)
             {
                 return PDICCBased.create(array, resources);
-//                Log.e("PdfBox-Android", "Unsupported color space kind: " + name + ". Will try DeviceRGB instead");
-//                return PDDeviceRGB.INSTANCE;
             }
             else if (name == COSName.LAB)
             {
@@ -225,8 +233,8 @@ public abstract class PDColorSpace implements COSObjectable
                 return PDDeviceRGB.INSTANCE;
             }
             else if (name == COSName.DEVICECMYK ||
-                name == COSName.DEVICERGB ||
-                name == COSName.DEVICEGRAY)
+                    name == COSName.DEVICERGB ||
+                    name == COSName.DEVICEGRAY)
             {
                 // not allowed in an array, but we sometimes encounter these regardless
                 return create(name, resources, wasDefault);
@@ -236,6 +244,19 @@ public abstract class PDColorSpace implements COSObjectable
                 throw new IOException("Invalid color space kind: " + name);
             }
         }
+        else if (colorSpace instanceof COSDictionary &&
+                ((COSDictionary) colorSpace).containsKey(COSName.COLORSPACE))
+        {
+            // PDFBOX-4833: dictionary with /ColorSpace entry
+            COSBase base = ((COSDictionary) colorSpace).getDictionaryObject(COSName.COLORSPACE);
+            if (base == colorSpace)
+            {
+                // PDFBOX-5315
+                throw new IOException("Recursion in colorspace: " +
+                        ((COSDictionary) colorSpace).getItem(COSName.COLORSPACE) + " points to itself");
+            }
+            return create(base, resources, wasDefault);
+        }
         else
         {
             throw new IOException("Expected a name or array but got: " + colorSpace);
@@ -243,7 +264,7 @@ public abstract class PDColorSpace implements COSObjectable
     }
 
     private static PDColorSpace createFromCOSObject(COSObject colorSpace, PDResources resources)
-        throws IOException
+            throws IOException
     {
         PDColorSpace cs;
         if (resources != null && resources.getResourceCache() != null)
@@ -308,7 +329,9 @@ public abstract class PDColorSpace implements COSObjectable
      */
     public abstract Bitmap toRGBImage(Bitmap raster) throws IOException;
 
-//    public abstract Bitmap toRGBImage(int[] raster) throws IOException;
+//    public abstract BufferedImage toRawImage(WritableRaster raster) throws IOException; TODO: PdfBox-Android
+
+//    protected final BufferedImage toRawImage(WritableRaster raster, ColorSpace awtColorSpace) TODO: PdfBox-Android
 
 //    protected BufferedImage toRGBImageAWT(WritableRaster raster, ColorSpace colorSpace) TODO: PdfBox-Android
 
@@ -317,5 +340,109 @@ public abstract class PDColorSpace implements COSObjectable
     {
         return array;
     }
+
+
+    public float getMinValue(int colorType,int index) {
+        switch (colorType) {
+            case TYPE_XYZ:
+                return 0.0f; // X, Y, Z
+//                result[1] = 1.0f + (32767.0f / 32768.0f);
+//                break;
+            case TYPE_Lab:
+                switch (index) {
+                    case 0:
+                        return 0.0f;
+                    case 1:
+                    case 2:
+                        return -128.0f;
+                }
+            default:
+                return 0.0f;
+        }
+    }
+
+    public float getMaxValue(int colorType,int index) {
+        switch (colorType) {
+            case TYPE_XYZ:
+//                return 0.0f; // X, Y, Z
+                return 1.0f + (32767.0f / 32768.0f);
+            case TYPE_Lab:
+                switch (index) {
+                    case 0:
+                        return 100.0f;
+                    case 1:
+                    case 2:
+                        return 127.0f;
+                }
+            default:
+                return 1.0f;
+        }
+    }
+
+    //x,y,z To r=[0],g=[1],b=[2]
+    public float[] xyzToRgb(float[] xyz) {
+        float[] rgb = new float[3];
+        rgb[0] = (xyz[0] * 3.240479f) + (xyz[1] * -1.537150f) + (xyz[2] * -.498535f);
+        rgb[1] = (xyz[0] * -.969256f) + (xyz[1] *  1.875992f) + (xyz[2] * .041556f);
+        rgb[2] = (xyz[0] * .055648f) +  (xyz[1] * -.204043f) + (xyz[2] * 1.057311f);
+
+        for (int i = 0; i < 3; i++)
+        {
+            if (rgb[i] > .0031308f)
+            {
+                rgb[i] = (1.055f * (float)Math.pow(rgb[i], (1.0f / 2.4f))) - .055f;
+            }
+            else
+            {
+                rgb[i] = rgb[i] * 12.92f;
+            }
+        }
+        return rgb;
+    }
+
+    public float[] toLab(float[] value) {
+        float[] lab = new float[3];
+        for (int i=0;i<3;i++) {
+            lab[i] = (getMaxValue(TYPE_Lab,i)-getMinValue(TYPE_Lab,i))*value[i]+getMinValue(TYPE_Lab,i);
+        }
+//        lab[0] = value[0] * 100;
+//        float min = -128.0f;
+//        float max = 127.0f;
+//        lab[1] = (max-min)*value[1]+min;
+//        lab[2] = (max-min)*value[2]+min;
+        return lab;
+    }
+
+    public float[] labToXyz(float[] value) {
+        float[] xyz = new float[3];
+        xyz[1] = (value[0]+16.f)/116.f;
+        xyz[0] = value[1]/500.f+xyz[1];
+        xyz[2] = xyz[1]-value[2]/200.f;
+
+        for (int i = 0; i < 3; i++)
+        {
+            float pow = xyz[i] * xyz[i] * xyz[i];
+            float ratio = (6.0f / 29.0f);
+            if (xyz[i] > ratio)
+            {
+                xyz[i] = pow;
+            }
+            else
+            {
+                xyz[i] = (3.0f * (6.0f / 29.0f) * (6.0f / 29.0f) * (xyz[i] - (4.0f / 29.0f)));
+            }
+        }
+
+        xyz[0] = xyz[0] * (95.047f);
+        xyz[1] = xyz[1] * (100.0f);
+        xyz[2] = xyz[2] * (108.883f);
+
+        xyz[0] = xyz[0] / 100f;
+        xyz[1] = xyz[1] / 100f;
+        xyz[2] = xyz[2] / 100f;
+
+        return xyz;
+    }
+
 
 }

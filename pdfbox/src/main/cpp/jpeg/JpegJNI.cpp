@@ -44,7 +44,7 @@ jbyteArray ConvertCharsToJByteaArray(JNIEnv *env, unsigned char *buff,int size)
     return arr;
 }
 
-JNIEXPORT jbyteArray JNICALL Java_com_xsooy_icc_JpegUtils_converData(JNIEnv *env, jobject thiz, jbyteArray data) {
+JNIEXPORT jbyteArray JNICALL Java_com_xsooy_jpeg_JpegUtils_converData(JNIEnv *env, jobject thiz, jbyteArray data) {
     unsigned char *pmsg = ConvertJByteaArrayToChars(env,data);
     int chars_len = env->GetArrayLength(data);
 

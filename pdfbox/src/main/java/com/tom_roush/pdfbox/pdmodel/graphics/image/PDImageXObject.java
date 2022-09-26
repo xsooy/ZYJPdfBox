@@ -538,6 +538,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
         int rgba;
         int alphaPixel;
         int alpha;
+        int test=0;
         for (int y = 0; y < height; y++)
         {
             for (int x = 0; x < width; x++)
@@ -545,6 +546,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
                 rgb = image.getPixel(x, y);
 
                 alphaPixel = mask.getPixel(x, y);
+
                 if (isSoft)
                 {
                     alpha = Color.alpha(alphaPixel);
@@ -561,13 +563,16 @@ public final class PDImageXObject extends PDXObject implements PDImage
                 {
                     alpha = 255 - Color.alpha(alphaPixel);
                 }
+                if (alpha!=0) {
+                    test++;
+                }
                 rgba = Color.argb(alpha, Color.red(rgb), Color.green(rgb),
                     Color.blue(rgb));
-
                 masked.setPixel(x, y, rgba);
             }
         }
 
+        Log.w("ceshi","masked==="+test);
         return masked;
     }
 

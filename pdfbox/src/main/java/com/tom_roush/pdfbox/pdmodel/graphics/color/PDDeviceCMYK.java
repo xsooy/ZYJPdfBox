@@ -119,29 +119,25 @@ public class PDDeviceCMYK extends PDDeviceColorSpace
 
     @Override
     public Bitmap toRGBImage(Bitmap raster) throws IOException {
-        init();
-        int width = raster.getWidth();
-        int height = raster.getHeight();
-
-        Bitmap rgbImage = Bitmap.createBitmap(width,height, Bitmap.Config.ARGB_8888);
-        int[] src = new int[width];
-        int test = 0;
-        for (int y = 0; y < height; y++)
-        {
-            raster.getPixels(src,0,width,0,y,width,1);
-            for (int x = 0; x < width; x++)
-            {
-                test++;
-                if (test<100) {
-                    Log.w("color_test","src[x]:"+(src[x]&0xff));
-                }
-                float[] value = new float[] {(src[x]&0xff)/255.f,(src[x]>>8&0xff)/255.f,(src[x]>>16&0xff)/255.f,(src[x]>>24&0xff)/255.f};
-                float[] rgb = toRGB(value);
-                int color = Color.argb(255,(int)(rgb[0]*255),(int)(rgb[0]*255),(int)(rgb[0]*255));
-                rgbImage.setPixel(x,y,color);
-            }
-        }
-        return rgbImage;
+//        init();
+//        int width = raster.getWidth();
+//        int height = raster.getHeight();
+//
+//        Bitmap rgbImage = Bitmap.createBitmap(width,height, Bitmap.Config.ARGB_8888);
+//        int[] src = new int[width];
+//        for (int y = 0; y < height; y++)
+//        {
+//            raster.getPixels(src,0,width,0,y,width,1);
+//            for (int x = 0; x < width; x++)
+//            {
+//                float[] value = new float[] {(src[x]&0xff)/255.f,(src[x]>>8&0xff)/255.f,(src[x]>>16&0xff)/255.f,(src[x]>>24&0xff)/255.f};
+//                float[] rgb = toRGB(value);
+//                int color = Color.argb(255,(int)(rgb[0]*255),(int)(rgb[0]*255),(int)(rgb[0]*255));
+//                rgbImage.setPixel(x,y,color);
+//            }
+//        }
+//        return rgbImage;
+        return null;
     }
 
     public Bitmap toRGBImage(byte[] raster,int width,int height) throws IOException {
@@ -165,126 +161,4 @@ public class PDDeviceCMYK extends PDDeviceColorSpace
         return rgbImage;
     }
 
-    public float[] toLab(float[] value) {
-        float[] lab = new float[3];
-        lab[0] = value[0] * 100;
-        float min = -128.0f;
-        float max = 127.0f;
-        lab[1] = (max-min)*value[1]+min;
-        lab[2] = (max-min)*value[2]+min;
-        return lab;
-    }
-
-    private float[] labToXyz(float[] value) {
-        float[] xyz = new float[3];
-        xyz[1] = (value[0]+16.f)/116.f;
-        xyz[0] = value[1]/500.f+xyz[1];
-        xyz[2] = xyz[1]-value[2]/200.f;
-
-        for (int i = 0; i < 3; i++)
-        {
-            float pow = xyz[i] * xyz[i] * xyz[i];
-            float ratio = (6.0f / 29.0f);
-            if (xyz[i] > ratio)
-            {
-                xyz[i] = pow;
-            }
-            else
-            {
-                xyz[i] = (3.0f * (6.0f / 29.0f) * (6.0f / 29.0f) * (xyz[i] - (4.0f / 29.0f)));
-            }
-        }
-
-//        for (int i = 0; i < 3; i++)
-//        {
-//            float pow = xyz[i] * xyz[i] * xyz[i];
-//            if (pow > .008856f)
-//            {
-//                xyz[i] = pow;
-//            }
-//            else
-//            {
-//                xyz[i] = (xyz[i]- 16.0f / 116.0f) / 7.787f;
-//            }
-//        }
-
-        xyz[0] = xyz[0] * (95.047f);
-        xyz[1] = xyz[1] * (100.0f);
-        xyz[2] = xyz[2] * (108.883f);
-
-        xyz[0] = xyz[0] / 100f;
-        xyz[1] = xyz[1] / 100f;
-        xyz[2] = xyz[2] / 100f;
-
-        return xyz;
-    }
-
-//    @Override
-//    public BufferedImage toRawImage(WritableRaster raster) throws IOException
-//    {
-//        // Device CMYK is not specified, as its the colors of whatever device you use.
-//        // The user should fallback to the RGB image
-//        return null;
-//    }
-
-//    @Override
-//    public BufferedImage toRGBImage(WritableRaster raster) throws IOException
-//    {
-//        init();
-//        return toRGBImageAWT(raster, awtColorSpace);
-//    }
-
-//    @Override
-//    protected BufferedImage toRGBImageAWT(WritableRaster raster, ColorSpace colorSpace)
-//    {
-//        if (usePureJavaCMYKConversion)
-//        {
-//            BufferedImage dest = new BufferedImage(raster.getWidth(), raster.getHeight(),
-//                    BufferedImage.TYPE_INT_RGB);
-//            ColorSpace destCS = dest.getColorModel().getColorSpace();
-//            WritableRaster destRaster = dest.getRaster();
-//            float[] srcValues = new float[4];
-//            float[] lastValues = new float[] { -1.0f, -1.0f, -1.0f, -1.0f };
-//            float[] destValues = new float[3];
-//            int startX = raster.getMinX();
-//            int startY = raster.getMinY();
-//            int endX = raster.getWidth() + startX;
-//            int endY = raster.getHeight() + startY;
-//            for (int x = startX; x < endX; x++)
-//            {
-//                for (int y = startY; y < endY; y++)
-//                {
-//                    raster.getPixel(x, y, srcValues);
-//                    // check if the last value can be reused
-//                    if (!Arrays.equals(lastValues, srcValues))
-//                    {
-//                        lastValues[0] = srcValues[0];
-//                        srcValues[0] = srcValues[0] / 255f;
-//
-//                        lastValues[1] = srcValues[1];
-//                        srcValues[1] = srcValues[1] / 255f;
-//
-//                        lastValues[2] = srcValues[2];
-//                        srcValues[2] = srcValues[2] / 255f;
-//
-//                        lastValues[3] = srcValues[3];
-//                        srcValues[3] = srcValues[3] / 255f;
-//
-//                        // use CIEXYZ as intermediate format to optimize the color conversion
-//                        destValues = destCS.fromCIEXYZ(colorSpace.toCIEXYZ(srcValues));
-//                        for (int k = 0; k < destValues.length; k++)
-//                        {
-//                            destValues[k] = destValues[k] * 255f;
-//                        }
-//                    }
-//                    destRaster.setPixel(x, y, destValues);
-//                }
-//            }
-//            return dest;
-//        }
-//        else
-//        {
-//            return super.toRGBImageAWT(raster, colorSpace);
-//        }
-//    }
 }
