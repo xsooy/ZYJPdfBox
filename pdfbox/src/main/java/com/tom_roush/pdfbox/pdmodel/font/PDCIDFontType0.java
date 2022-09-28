@@ -31,6 +31,7 @@ import com.tom_roush.fontbox.cff.CFFFont;
 import com.tom_roush.fontbox.cff.CFFParser;
 import com.tom_roush.fontbox.cff.CFFType1Font;
 import com.tom_roush.fontbox.cff.Type2CharString;
+import com.tom_roush.fontbox.ttf.TrueTypeFont;
 import com.tom_roush.fontbox.util.BoundingBox;
 import com.tom_roush.harmony.awt.geom.AffineTransform;
 import com.tom_roush.pdfbox.cos.COSDictionary;
@@ -302,11 +303,12 @@ public class PDCIDFontType0 extends PDCIDFont
     {
         if (cidFont != null)
         {
-//            Log.w("ceshi","getType2CharString111");
+            Log.w("ceshi","getType2CharString111==="+cidFont.getName());
             return cidFont.getType2CharString(cid);
         }
         else if (t1Font instanceof CFFType1Font)
         {
+            Log.w("ceshi","getType2CharString222==="+t1Font.getName());
             return ((CFFType1Font)t1Font).getType2CharString(cid);
         }
         else
@@ -357,6 +359,7 @@ public class PDCIDFontType0 extends PDCIDFont
     public boolean hasGlyph(int code) throws IOException
     {
         int cid = codeToCID(code);
+//        Log.w("ceshi","getGlyphName(code):"+getGlyphName(code)+",,,,,"+t1Font.getName());
         Type2CharString charstring = getType2CharString(cid);
         if (charstring != null)
         {
@@ -368,8 +371,9 @@ public class PDCIDFontType0 extends PDCIDFont
         }
         else
         {
-            Log.w("ceshi","getGlyphName(code):"+getGlyphName(code));
-            Log.w("ceshi","t1Font.hasGlyph(getGlyphName(code)):"+t1Font.hasGlyph(getGlyphName(code)));
+//            Log.w("ceshi","getSimpleName(code):"+t1Font.getClass().getSimpleName());
+//            Log.w("ceshi","getGlyphName(code):"+getGlyphName(code)+",,,,,"+t1Font.getName());
+//            Log.w("ceshi","t1Font.hasGlyph(getGlyphName(code)):"+t1Font.hasGlyph(getGlyphName(code)));
 
             return t1Font.hasGlyph(getGlyphName(code));
         }

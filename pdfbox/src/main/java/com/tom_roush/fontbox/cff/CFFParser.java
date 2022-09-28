@@ -103,12 +103,15 @@ public class CFFParser
 
         @SuppressWarnings("unused")
         Header header = readHeader(input);
+
+//        Log.w("ceshi","readStringIndexData222");
         String[] nameIndex = readStringIndexData(input);
         if (nameIndex == null)
         {
             throw new IOException("Name index missing in CFF font");
         }
         byte[][] topDictIndex = readIndexData(input);
+//        Log.w("ceshi","readStringIndexData111");
         stringIndex = readStringIndexData(input);
         byte[][] globalSubrIndex = readIndexData(input);
 
@@ -174,7 +177,7 @@ public class CFFParser
     private static int[] readIndexDataOffsets(CFFDataInput input) throws IOException
     {
         int count = input.readCard16();
-        Log.w("ceshi","readIndexDataOffsets==="+count);
+//        Log.w("ceshi","readIndexDataOffsets==="+count);
         if (count == 0)
         {
             return null;
@@ -471,9 +474,9 @@ public class CFFParser
         DictData.Entry charStringsEntry = topDict.getEntry("CharStrings");
         int charStringsOffset = charStringsEntry.getNumber(0).intValue();
         input.setPosition(charStringsOffset);
-        Log.w("ceshi","charStringsIndex");
+        Log.w("ceshi","charStringsIndex==="+name);
         byte[][] charStringsIndex = readIndexData(input);
-
+        Log.w("ceshi","charStringsIndex.length==="+charStringsIndex.length);
         // charset
         DictData.Entry charsetEntry = topDict.getEntry("charset");
         CFFCharset charset;
@@ -621,13 +624,13 @@ public class CFFParser
             {
                 throw new IOException("Font DICT invalid without \"Private\" entry");
             }
-
             // font dict
             Map<String, Object> fontDictMap = new LinkedHashMap<String, Object>(4);
             fontDictMap.put("FontName", getString(fontDict, "FontName"));
             fontDictMap.put("FontType", fontDict.getNumber("FontType", 0));
             fontDictMap.put("FontBBox", fontDict.getArray("FontBBox", null));
             fontDictMap.put("FontMatrix", fontDict.getArray("FontMatrix", null));
+//            Log.w("ceshi","fontDict===="+fontDictMap.get("FontName"));
             // TODO OD-4 : Add here other keys
             fontDictionaries.add(fontDictMap);
 
@@ -1020,10 +1023,13 @@ public class CFFParser
         switch (format)
         {
             case 0:
+                Log.w("ceshi","readCharset1");
                 return readFormat0Charset(dataInput, format, nGlyphs, isCIDFont);
             case 1:
+                Log.w("ceshi","readCharset2");
                 return readFormat1Charset(dataInput, format, nGlyphs, isCIDFont);
             case 2:
+                Log.w("ceshi","readCharset3");
                 return readFormat2Charset(dataInput, format, nGlyphs, isCIDFont);
             default:
                 throw new IllegalArgumentException();
@@ -1098,6 +1104,8 @@ public class CFFParser
     private Format2Charset readFormat2Charset(CFFDataInput dataInput, int format, int nGlyphs,
         boolean isCIDFont) throws IOException
     {
+        Log.w("ceshi","format=="+format);
+        Log.w("ceshi","nGlyphs=="+nGlyphs);
         Format2Charset charset = new Format2Charset(isCIDFont);
         charset.format = format;
         if (isCIDFont)
@@ -1114,6 +1122,8 @@ public class CFFParser
         {
             int first = dataInput.readSID();
             int nLeft = dataInput.readCard16();
+            Log.w("ceshi","first"+first);
+            Log.w("ceshi","nLeft"+nLeft);
             if (!isCIDFont)
             {
                 for (int j = 0; j < 1 + nLeft; j++)
@@ -1466,13 +1476,16 @@ public class CFFParser
         @Override
         public int getGIDForCID(int cid)
         {
+            Log.w("ceshi","getGIDForCID111232");
             for (RangeMapping mapping : rangesCID2GID)
             {
                 if (mapping.isInReverseRange(cid))
                 {
+                    Log.w("ceshi","getGIDForCID111");
                     return mapping.mapReverseValue(cid);
                 }
             }
+            Log.w("ceshi","getGIDForCID222");
             return super.getGIDForCID(cid);
         }
 

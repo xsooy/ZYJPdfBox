@@ -51,7 +51,6 @@ public class ShowTextAdjusted extends OperatorProcessor
             return;
         }
         COSArray array = (COSArray) base;
-
         context.showTextStrings(array);
     }
 

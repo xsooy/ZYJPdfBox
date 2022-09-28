@@ -591,6 +591,7 @@ public class PDGraphicsState implements Cloneable
 
     public void intersectClippingPath(Path path,float scale)
     {
+        Log.w("ceshi","intersectClippingPath");
         RectF bounds = new RectF();
         android.graphics.Matrix matrix = new android.graphics.Matrix();
         matrix.setScale(scale,scale);

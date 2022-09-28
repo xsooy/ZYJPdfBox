@@ -59,6 +59,7 @@ public class SetFontAndSize extends OperatorProcessor
         float fontSize = ((COSNumber) base1).floatValue();
         context.getGraphicsState().getTextState().setFontSize(fontSize);
         PDFont font = context.getResources().getFont(fontName);
+//        Log.w("ceshi","fontName==="+font.getName());
         context.getGraphicsState().getTextState().setFont(font);
     }
 

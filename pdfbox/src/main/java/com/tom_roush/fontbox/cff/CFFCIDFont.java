@@ -226,9 +226,10 @@ public class CFFCIDFont extends CFFFont
     public CIDKeyedType2CharString getType2CharString(int cid) throws IOException
     {
         CIDKeyedType2CharString type2 = charStringCache.get(cid);
-        Log.w("ceshi","getType2CharString"+(type2==null));
+//        Log.w("ceshi","getType2CharString"+(type2==null));
         if (type2 == null)
         {
+            Log.w("ceshi","charset=="+charset.getClass().getSimpleName());
             int gid = charset.getGIDForCID(cid);
             Log.w("ceshi","cid:::"+cid+",gid:::"+gid);
             byte[] bytes = charStrings[gid];
@@ -236,13 +237,13 @@ public class CFFCIDFont extends CFFFont
             {
                 bytes = charStrings[0]; // .notdef
             }
-            Log.w("ceshi","bytes.length"+bytes.length);
+//            Log.w("ceshi","charStrings.length=="+charStrings.length);
             Type2CharStringParser parser = new Type2CharStringParser(fontName, cid);
             List<Object> type2seq = parser.parse(bytes, globalSubrIndex, getLocalSubrIndex(gid));
             type2 = new CIDKeyedType2CharString(reader, fontName, cid, gid, type2seq,
                 getDefaultWidthX(gid), getNominalWidthX(gid));
             charStringCache.put(cid, type2);
-            Log.w("ceshi","charStringCache.add"+cid);
+//            Log.w("ceshi","charStringCache.add"+cid);
         }
         return type2;
     }

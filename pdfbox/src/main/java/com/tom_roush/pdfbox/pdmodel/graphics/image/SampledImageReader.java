@@ -216,11 +216,13 @@ final class SampledImageReader
             if (pdImage.getSuffix() != null && pdImage.getSuffix().equals("jpg") && subsampling == 1)
             {
                 if (pdImage.getColorSpace() instanceof PDDeviceCMYK) {
+                    Log.w("ceshi","PDDeviceCMYK????");
                     InputStream inputStream = pdImage.createInputStream();
                     byte[] buff = new byte[inputStream.available()];
                     IOUtils.populateBuffer(inputStream,buff);
                     return ((PDDeviceCMYK)pdImage.getColorSpace()).toRGBImage(new JpegUtils().converData(buff),width,height);
                 }
+                Log.w("ceshi","NotPDDeviceCMYK????");
                 return BitmapFactory.decodeStream(pdImage.createInputStream());
             }
             else if (bitsPerComponent == 8 && Arrays.equals(decode, defaultDecode) &&

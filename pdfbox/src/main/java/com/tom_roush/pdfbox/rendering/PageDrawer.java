@@ -381,7 +381,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             {
                 path.addPath(shape);
             }
-            Log.w("ceshi","intersectClippingPath222");
+//            Log.w("ceshi","intersectClippingPath222");
             state.intersectClippingPath(path);
             textClippings = new ArrayList<Path>();
 

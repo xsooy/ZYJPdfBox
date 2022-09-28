@@ -10,8 +10,6 @@ public class IccUtils {
         System.loadLibrary("icc");
     }
 
-    public static String iccProfileDir = "/";
-
     public native int loadProfile(String path);
 
     public native int loadProfileByData(byte[] data);
@@ -38,6 +36,5 @@ public class IccUtils {
                 return TYPE_RGB;
         }
     }
-
 
 }

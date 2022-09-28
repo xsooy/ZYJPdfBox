@@ -360,6 +360,7 @@ public class PDFRenderer
         PageDrawerParameters parameters = new PageDrawerParameters(this, page, subsamplingAllowed,
             destination);
         PageDrawer drawer = createPageDrawer(parameters);
+//        drawer.initPage(page);
         drawer.drawPage(paint, canvas, cropBox);
     }
 

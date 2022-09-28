@@ -43,7 +43,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        IccUtils.iccProfileDir = getExternalFilesDir("").getAbsolutePath();
         setContentView(R.layout.activity_main);
 //        iccUtils = new IccUtils();
 //        iccUtils.loadProfile(getExternalFilesDir("").getAbsolutePath()+"/ISOcoated_v2_300_bas.icc");

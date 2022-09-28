@@ -5,7 +5,9 @@ import android.graphics.Color;
 import android.opengl.Matrix;
 import android.util.Log;
 
+import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
 import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.io.IOUtils;
 import com.xsooy.icc.IccUtils;
 
 import java.io.BufferedInputStream;
@@ -50,11 +52,18 @@ public class PDDeviceCMYK extends PDDeviceColorSpace
             {
                 return;
             }
-            if (new File(IccUtils.iccProfileDir+"/ISOcoated_v2_300_bas.icc").exists()) {
-                iccUtils = new IccUtils();
-                iccUtils.loadProfile(IccUtils.iccProfileDir+"/ISOcoated_v2_300_bas.icc");
-            }
+
+            InputStream inputStream = PDFBoxResourceLoader.getStream("com/tom_roush/pdfbox/resources/icc/ISOcoated_v2_300_bas.icc");
+            byte[] buff = new byte[inputStream.available()];
+            IOUtils.populateBuffer(inputStream,buff);
+            iccUtils = new IccUtils();
+            iccUtils.loadProfileByData(buff);
             initDone = true;
+//            if (new File(IccUtils.iccProfileDir+"/ISOcoated_v2_300_bas.icc").exists()) {
+//                iccUtils = new IccUtils();
+//                iccUtils.loadProfile(IccUtils.iccProfileDir+"/ISOcoated_v2_300_bas.icc");
+//            }
+//            initDone = true;
         }
     }
 
@@ -111,7 +120,6 @@ public class PDDeviceCMYK extends PDDeviceColorSpace
             iccUtils.applyCmyk(value,data);
             float[] lab = toLab(data);
             float[] xyz = labToXyz(lab);
-
             return NormalColorSpace.xyzToRgb(xyz);
         }
         return new float[]{(1-value[0])*(1-value[3]),(1-value[1])*(1-value[3]),(1-value[2])*(1-value[3])};

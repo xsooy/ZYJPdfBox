@@ -127,7 +127,7 @@ public abstract class PDFStreamEngine
     /**
      * Initializes the stream engine for the given page.
      */
-    protected void initPage(PDPage page)
+    public void initPage(PDPage page)
     {
         if (page == null)
         {
@@ -514,7 +514,7 @@ public abstract class PDFStreamEngine
             }
             else if (token instanceof Operator)
             {
-                Log.w("ceshi","Operator:"+((Operator) token).getName());
+//                Log.w("ceshi","Operator:"+((Operator) token).getName());
                 processOperator((Operator) token, arguments);
                 arguments = new ArrayList<COSBase>();
             }
@@ -528,6 +528,7 @@ public abstract class PDFStreamEngine
             }
             token = parser.parseNextToken();
         }
+//        Log.w("ceshi"," test++==="+test);
     }
 
     /**
@@ -683,6 +684,8 @@ public abstract class PDFStreamEngine
         textMatrix.concatenate(Matrix.getTranslateInstance(tx, ty));
     }
 
+    int test = 0;
+
     /**
      * Process text from the PDF Stream. You should override this method if you want to
      * perform an action when encoded text is being processed.
@@ -720,10 +723,7 @@ public abstract class PDFStreamEngine
             // decode a character
             int before = in.available();
             int code = font.readCode(in);
-//            test++;
-//            if (test>100) {
-//                return;
-//            }
+
 //            Log.w("ceshi","code::"+code);
             int codeLength = before - in.available();
             String unicode = font.toUnicode(code);

@@ -528,6 +528,7 @@ final class FontMapperImpl implements FontMapper
             {
                 // try automatic substitutes via character collection
                 PriorityQueue<FontMatch> queue = getFontMatches(fontDescriptor, cidSystemInfo);
+                Log.w("ceshi","queue=="+queue.size());
                 FontMatch bestMatch = queue.poll();
 //                Log.w("ceshi","fontMatch.info::"+bestMatch.info.toString());
 //                Log.w("ceshi","fontMatch.score::"+bestMatch.score);
@@ -542,9 +543,9 @@ final class FontMapperImpl implements FontMapper
 //                                }
 //                                break;
 //                        }
-////                        Log.w("ceshi","fontMatch.info::"+fontMatch.info.toString());
-////                        Log.w("ceshi","fontMatch.score::"+fontMatch.score);
-////                        Log.w("ceshi","fontMatch.score::"+fontMatch.info.getFile().length());
+//                        Log.w("ceshi","fontMatch.info::"+fontMatch.info.toString());
+//                        Log.w("ceshi","fontMatch.score::"+fontMatch.score);
+//                        Log.w("ceshi","fontMatch.score::"+fontMatch.info.getFile().length());
 //                        if (fontMatch.info.getFont()!=null&&length<fontMatch.score) {
 //                            length = fontMatch.score;
 //                            bestMatch = fontMatch;
@@ -552,7 +553,7 @@ final class FontMapperImpl implements FontMapper
 //                    }
                     Log.w("ceshi","fontMatch.info::"+bestMatch.info.toString());
                     Log.w("ceshi","fontMatch.score::"+bestMatch.score);
-                    Log.w("ceshi","fontMatch.score::"+bestMatch.info.getFile().length());
+                    Log.w("ceshi","fontMatch.length::"+bestMatch.info.getFile().length());
                     FontBoxFont font = bestMatch.info.getFont();
 //                    Log.w("ceshi","FontBoxFont::"+font.getClass().getSimpleName());
                     if (font instanceof OpenTypeFont)

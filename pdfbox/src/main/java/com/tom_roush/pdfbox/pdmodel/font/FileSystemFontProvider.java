@@ -223,7 +223,7 @@ final class FileSystemFontProvider extends FontProvider
                 //TODO: zyj 需要中文字体库
 //                addTrueTypeFont(new File("/system/fonts/Miui-Light.ttf"));
 //                addTrueTypeFont(new File("/system/fonts/zhongsong.ttf"));
-                addTrueTypeCollection(new File("/storage/emulated/0/Android/data/com.example.test/files/ヒラギノ角ゴシック W5.ttc"));
+//                addTrueTypeCollection(new File("/storage/emulated/0/Android/data/com.example.test/files/ヒラギノ角ゴシック W5.ttc"));
 //                addTrueTypeCollection(new File("/system/fonts/NotoSansCJK-Regular.ttc"));
                 addTrueTypeFont(new File("/system/fonts/DroidSans.ttf"));
                 addTrueTypeFont(new File("/system/fonts/DroidSans-Bold.ttf"));
@@ -272,7 +272,7 @@ final class FileSystemFontProvider extends FontProvider
             List<URI> fonts = fontFileFinder.find();
             for (URI font : fonts)
             {
-                Log.w("font_ceshi","文件路径："+new File(font).getAbsolutePath());
+//                Log.w("font_ceshi","文件路径22："+new File(font).getAbsolutePath());
                 files.add(new File(font));
             }
 
@@ -298,6 +298,7 @@ final class FileSystemFontProvider extends FontProvider
         }
         catch (AccessControlException e)
         {
+            Log.w("font_ceshi",e.getMessage());
             Log.e("PdfBox-Android", "Error accessing the file system", e);
         }
     }
@@ -431,6 +432,7 @@ final class FileSystemFontProvider extends FontProvider
      */
     private List<FSFontInfo> loadDiskCache(List<File> files)
     {
+        Log.w("font_ceshi","loadDiskCache");
         Set<String> pending = new HashSet<String>();
         for (File file : files)
         {
@@ -512,6 +514,7 @@ final class FileSystemFontProvider extends FontProvider
                     fontFile = new File(parts[9]);
                     if (fontFile.exists())
                     {
+//                        Log.w("font_ceshi11",fontFile.getName()+"-----postScriptName==="+postScriptName);
                         FSFontInfo info = new FSFontInfo(fontFile, format, postScriptName,
                             cidSystemInfo, usWeightClass, sFamilyClass, ulCodePageRange1,
                             ulCodePageRange2, macStyle, panose, this);
@@ -550,6 +553,7 @@ final class FileSystemFontProvider extends FontProvider
      */
     private void addTrueTypeCollection(final File ttcFile) throws IOException
     {
+        Log.w("ceshi","addTrueTypeCollection==="+ttcFile.getName());
         TrueTypeCollection ttc = null;
         try
         {

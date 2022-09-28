@@ -102,7 +102,7 @@ public abstract class PDColorSpace implements COSObjectable
         else if (colorSpace instanceof COSName)
         {
             COSName name = (COSName)colorSpace;
-            Log.w("ceshi","name==="+name);
+//            Log.w("ceshi","name==="+name);
             // default color spaces
             if (resources != null)
             {
@@ -132,9 +132,7 @@ public abstract class PDColorSpace implements COSObjectable
             // built-in color spaces
             if (name == COSName.DEVICECMYK)
             {
-//                return PDDeviceCMYK.INSTANCE;
-                Log.e("PdfBox-Android", "Unsupported color space kind: " + name + ". Will try DeviceRGB instead");
-                return PDDeviceRGB.INSTANCE;
+                return PDDeviceCMYK.INSTANCE;
             }
             else if (name == COSName.DEVICERGB)
             {
@@ -146,9 +144,7 @@ public abstract class PDColorSpace implements COSObjectable
             }
             else if (name == COSName.PATTERN)
             {
-//                return new PDPattern(resources);
-                Log.e("PdfBox-Android", "Unsupported color space kind: " + name + ". Will try DeviceRGB instead");
-                return PDDeviceRGB.INSTANCE;
+                return new PDPattern(resources);
             }
             else if (resources != null)
             {
@@ -181,15 +177,11 @@ public abstract class PDColorSpace implements COSObjectable
 
             if (name == COSName.CALGRAY)
             {
-//                return new PDCalGray(array); TODO: PdfBox-Android
-                Log.e("PdfBox-Android", "Unsupported color space kind: " + name + ". Will try DeviceRGB instead");
-                return PDDeviceRGB.INSTANCE;
+                return new PDCalGray(array); //TODO: PdfBox-Android
             }
             else if (name == COSName.CALRGB)
             {
-//                return new PDCalRGB(array);
-                Log.e("PdfBox-Android", "Unsupported color space kind: " + name + ". Will try DeviceRGB instead");
-                return PDDeviceRGB.INSTANCE;
+                return new PDCalRGB(array);
             }
             else if (name == COSName.DEVICEN)
             {
@@ -200,8 +192,6 @@ public abstract class PDColorSpace implements COSObjectable
             else if (name == COSName.INDEXED)
             {
                 return new PDIndexed(array);
-//                Log.e("PdfBox-Android", "Unsupported color space kind: " + name + ". Will try DeviceRGB instead");
-//                return PDDeviceRGB.INSTANCE;
             }
             else if (name == COSName.SEPARATION)
             {
@@ -223,7 +213,7 @@ public abstract class PDColorSpace implements COSObjectable
             {
                 if (array.size() == 1)
                 {
-//                    return new PDPattern(resources);
+                    return new PDPattern(resources);
                 }
                 else
                 {

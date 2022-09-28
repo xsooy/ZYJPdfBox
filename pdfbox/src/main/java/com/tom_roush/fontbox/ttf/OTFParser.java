@@ -17,6 +17,8 @@
 
 package com.tom_roush.fontbox.ttf;
 
+import android.util.Log;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -64,6 +66,7 @@ public final class OTFParser extends TTFParser
     @Override
     public OpenTypeFont parse(File file) throws IOException
     {
+//        Log.w("ceshi","parse---OpenTypeFont----"+file.getName());
         return (OpenTypeFont)super.parse(file);
     }
 

@@ -71,6 +71,7 @@ public class TTFParser
      */
     public TrueTypeFont parse(String ttfFile) throws IOException
     {
+        Log.w("ceshi","parse--ttfFile-----"+ttfFile);
         return parse(new File(ttfFile));
     }
 
