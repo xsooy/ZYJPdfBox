@@ -884,7 +884,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             }
             else
             {
-                Log.w("ceshi","drawBitmap111");
+//                Log.w("ceshi","drawBitmap111");
                 // subsampling not allowed, draw the image
                 drawBitmap(pdImage.getImage(), at);
             }

@@ -140,12 +140,14 @@ public final class PDIndexed extends PDSpecialColorSpace
 //        }
 
 //        int[] base = new int[numBaseComponents];
-        rgbColorTable = new int[actualMaxIndex + 1][3];
+        rgbColorTable = new int[actualMaxIndex + 1][numBaseComponents];
         for (int i = 0, n = actualMaxIndex; i <= n; i++)
         {
+            float[] rgb = baseColorSpace.toRGB(colorTable[i]);
             for (int c = 0; c < 3; c++)
             {
-                rgbColorTable[i][c] = (int)(colorTable[i][c] * 255f);
+                rgbColorTable[i][c] = (int)(rgb[c]*255);
+//                rgbColorTable[i][c] = (int)(colorTable[i][c] * 255f);
 //                base[c] = (int)(colorTable[i][c] * 255f);
             }
 //            rgbColorTable[i][c] = base;
@@ -214,8 +216,11 @@ public final class PDIndexed extends PDSpecialColorSpace
         {
             for (int x = 0; x < width; x++)
             {
-                int index = Math.max(Math.min(raster[x+y*width], actualMaxIndex),0);
-                int color = Color.argb(255,rgbColorTable[index][0],rgbColorTable[index][1],rgbColorTable[index][2]);
+                int index = Math.min(raster[x+y*width], actualMaxIndex);
+                int color = Color.alpha(0);
+                if (index>=0) {
+                    color = Color.argb(255,rgbColorTable[index][0],rgbColorTable[index][1],rgbColorTable[index][2]);
+                }
                 rgbImage.setPixel(x,y,color);
             }
         }

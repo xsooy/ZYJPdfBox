@@ -485,7 +485,6 @@ final class SampledImageReader
                                          final int subsampling, final int width, final int height)
             throws IOException
     {
-        Log.w("ceshi","forAny");
         int currentSubsampling = subsampling;
         final PDColorSpace colorSpace = pdImage.getColorSpace();
         final int numComponents = colorSpace.getNumberOfComponents();
