@@ -82,7 +82,7 @@ public class CFFParser
         CFFDataInput input = new CFFDataInput(bytes);
 
         String firstTag = readTagName(input);
-        Log.w("ceshi","firstTag:"+firstTag);
+//        Log.w("ceshi","firstTag:"+firstTag);
         // try to determine which kind of font we have
         if (TAG_OTTO.equals(firstTag))
         {
@@ -474,9 +474,9 @@ public class CFFParser
         DictData.Entry charStringsEntry = topDict.getEntry("CharStrings");
         int charStringsOffset = charStringsEntry.getNumber(0).intValue();
         input.setPosition(charStringsOffset);
-        Log.w("ceshi","charStringsIndex==="+name);
+//        Log.w("ceshi","charStringsIndex==="+name);
         byte[][] charStringsIndex = readIndexData(input);
-        Log.w("ceshi","charStringsIndex.length==="+charStringsIndex.length);
+//        Log.w("ceshi","charStringsIndex.length==="+charStringsIndex.length);
         // charset
         DictData.Entry charsetEntry = topDict.getEntry("charset");
         CFFCharset charset;

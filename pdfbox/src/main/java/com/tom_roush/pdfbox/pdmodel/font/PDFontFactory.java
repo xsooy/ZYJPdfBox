@@ -116,7 +116,7 @@ public final class PDFontFactory
         COSName subType = dictionary.getCOSName(COSName.SUBTYPE);
         if (COSName.CID_FONT_TYPE0.equals(subType))
         {
-            Log.w("ceshi","PDCIDFontType0==");
+//            Log.w("ceshi","PDCIDFontType0==");
             return new PDCIDFontType0(dictionary, parent);
         }
         else if (COSName.CID_FONT_TYPE2.equals(subType))

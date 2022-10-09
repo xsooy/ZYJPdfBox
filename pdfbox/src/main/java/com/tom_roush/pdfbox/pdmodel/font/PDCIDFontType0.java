@@ -97,12 +97,12 @@ public class PDCIDFontType0 extends PDCIDFont
             CFFParser cffParser = new CFFParser();
             try
             {
-                Log.w("ceshi","CFFParser2222===="+bytes.length);
+//                Log.w("ceshi","CFFParser2222===="+bytes.length);
                 cffFont = cffParser.parse(bytes, new ByteSource()).get(0);
             }
             catch (IOException e)
             {
-                Log.w("ceshi","CFFParser2222===="+e.getMessage());
+//                Log.w("ceshi","CFFParser2222===="+e.getMessage());
                 Log.e("PdfBox-Android", "Can't read the embedded CFF font " + fd.getFontName(), e);
                 fontIsDamaged = true;
             }
@@ -303,12 +303,12 @@ public class PDCIDFontType0 extends PDCIDFont
     {
         if (cidFont != null)
         {
-            Log.w("ceshi","getType2CharString111==="+cidFont.getName());
+//            Log.w("ceshi","getType2CharString111==="+cidFont.getName());
             return cidFont.getType2CharString(cid);
         }
         else if (t1Font instanceof CFFType1Font)
         {
-            Log.w("ceshi","getType2CharString222==="+t1Font.getName());
+//            Log.w("ceshi","getType2CharString222==="+t1Font.getName());
             return ((CFFType1Font)t1Font).getType2CharString(cid);
         }
         else

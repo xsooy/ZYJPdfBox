@@ -1,5 +1,7 @@
 package com.tom_roush.pdfbox.pdmodel.graphics.color;
 
+import android.util.Log;
+
 public class NormalColorSpace {
 
     public static final int TYPE_XYZ = 0;
@@ -87,6 +89,7 @@ public class NormalColorSpace {
                 rgb[i] = rgb[i] * 12.92f;
             }
         }
+//        Log.w("ceshi",String.format("r:%f,g:%f,b:%f",rgb[0],rgb[1],rgb[2]));
         return rgb;
     }
 

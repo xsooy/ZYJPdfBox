@@ -212,8 +212,9 @@ public final class PDICCBased extends PDCIEBasedColorSpace
             // results in a large performance gain as it's our native color space, see PDFBOX-2587
 //            ICC_Profile profile;
             iccUtils = new IccUtils();
-
+            PDDeviceCMYK.INSTANCE.initDone = false;
             colorType = IccUtils.getIccColorType(iccUtils.loadProfileByData(getProfileDataFromStream(input)));
+            Log.w("icc_ceshi","加载ICC");
             switch (colorType) {
                 case TYPE_GRAY:
                     numberOfComponents = 1;

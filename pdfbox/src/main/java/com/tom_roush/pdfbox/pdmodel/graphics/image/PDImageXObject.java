@@ -439,9 +439,12 @@ public final class PDImageXObject extends PDXObject implements PDImage
 
         // soft mask (overrides explicit mask)
         PDImageXObject softMask = getSoftMask();
+
         if (softMask != null)
         {
+//            return softMask.getImage();
             float[] matte = extractMatte(softMask);
+            Log.w("ceshi","applyMask111");
             image = applyMask(image, softMask.getOpaqueImage(), true, matte);
         }
         else
@@ -450,6 +453,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
             PDImageXObject mask = getMask();
             if (mask != null && mask.isStencil())
             {
+                Log.w("ceshi","applyMask222");
                 image = applyMask(image, mask.getOpaqueImage(), false, null);
             }
         }
@@ -539,6 +543,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
         int alphaPixel;
         int alpha;
         int test=0;
+
         for (int y = 0; y < height; y++)
         {
             for (int x = 0; x < width; x++)

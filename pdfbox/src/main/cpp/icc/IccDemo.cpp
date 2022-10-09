@@ -17,9 +17,7 @@ icFloatNumber Pixels[16];
 extern "C"{
 
     JNIEXPORT jint JNICALL Java_com_xsooy_icc_IccUtils_loadProfile(JNIEnv *env, jobject thiz, jstring path) {
-        if (cmm != NULL) {
-            delete cmm;
-        }
+        delete cmm;
         cmm = new CIccCmm;
         if (cmm->GetNumXforms()!=0) {
             pri_debug("profile已加载");
@@ -56,14 +54,12 @@ icUInt8Number* ConvertJByteaArrayToChars(JNIEnv *env, jbyteArray bytearray)
 }
 
 JNIEXPORT jint JNICALL Java_com_xsooy_icc_IccUtils_loadProfileByData(JNIEnv *env, jobject thiz, jbyteArray data) {
-    if (cmm != NULL) {
-        delete cmm;
-    }
+    delete cmm;
     cmm = new CIccCmm;
     icUInt8Number *pmsg = ConvertJByteaArrayToChars(env,data);
     int chars_len = env->GetArrayLength(data);
     CIccProfile* cIccProfile = OpenIccProfile(pmsg, chars_len);
-    if (cIccProfile==NULL) {
+    if (cIccProfile==nullptr) {
         pri_debug("创建IccData失败");
         return -1;
     }

@@ -71,6 +71,7 @@ public class PDExtendedGraphicsState implements COSObjectable
     {
         for( COSName key : dict.keySet() )
         {
+//            Log.w("ceshi","copyIntoGraphicsState=="+key);
             if( key.equals( COSName.LW ) )
             {
                 gs.setLineWidth( defaultIfNull( getLineWidth(), 1 ) );
@@ -130,10 +131,12 @@ public class PDExtendedGraphicsState implements COSObjectable
             }
             else if( key.equals( COSName.CA ) )
             {
+                Log.w("Operator_ceshi","setAlphaConstant-----"+getStrokingAlphaConstant());
                 gs.setAlphaConstant( defaultIfNull( getStrokingAlphaConstant(), 1.0f ) );
             }
             else if( key.equals( COSName.CA_NS ) )
             {
+                Log.w("Operator_ceshi","setNonStrokeAlphaConstant-----"+getNonStrokingAlphaConstant());
                 gs.setNonStrokeAlphaConstant( defaultIfNull( getNonStrokingAlphaConstant(), 1.0f ) );
             }
             else if( key.equals( COSName.AIS ) )

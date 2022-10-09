@@ -71,7 +71,7 @@ public abstract class CFFCharset
         {
             throw new IllegalStateException("Not a Type 1-equivalent font");
         }
-        Log.w("ceshi","git:"+gid+",sid:"+sid+",name:"+name);
+//        Log.w("ceshi","git:"+gid+",sid:"+sid+",name:"+name);
         sidOrCidToGid.put(sid, gid);
         gidToSid.put(gid, sid);
         nameToSid.put(name, sid);
@@ -90,7 +90,7 @@ public abstract class CFFCharset
         {
             throw new IllegalStateException("Not a CIDFont");
         }
-        Log.w("ceshi","git:"+gid+",sid:"+cid);
+//        Log.w("ceshi","git:"+gid+",sid:"+cid);
         sidOrCidToGid.put(cid, gid);
         gidToCid.put(gid, cid);
     }
@@ -143,12 +143,12 @@ public abstract class CFFCharset
      */
     public int getGIDForCID(int cid)
     {
-        Log.w("ceshi","getGIDForCID==");
+//        Log.w("ceshi","getGIDForCID==");
         if (!isCIDFont)
         {
             throw new IllegalStateException("Not a CIDFont");
         }
-        Log.w("ceshi","sidOrCidToGid=="+sidOrCidToGid.size());
+//        Log.w("ceshi","sidOrCidToGid=="+sidOrCidToGid.size());
         Integer gid = sidOrCidToGid.get(cid);
         if (gid == null)
         {

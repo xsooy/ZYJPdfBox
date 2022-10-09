@@ -16,6 +16,8 @@
  */
 package com.tom_roush.pdfbox.pdmodel.common;
 
+import android.util.Log;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

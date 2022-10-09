@@ -42,6 +42,7 @@ import java.util.Stack;
 import java.util.StringTokenizer;
 
 import com.tom_roush.harmony.awt.geom.AffineTransform;
+import com.tom_roush.pdfbox.R;
 import com.tom_roush.pdfbox.contentstream.PDFGraphicsStreamEngine;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
@@ -277,7 +278,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     // returns an integer for color that Android understands from the PDColor
     private int getColor(PDColor color) throws IOException {
         PDColorSpace colorSpace = color.getColorSpace();
-        //Log.w("ceshi","hadingColorSpace.toRGB::"+colorSpace.getClass().getSimpleName());
+//        Log.w("ceshi","hadingColorSpace.toRGB::"+colorSpace.getClass().getSimpleName());
         if (colorSpace instanceof PDPattern) {
 //            PDAbstractPattern pattern = ((PDPattern)colorSpace).getPattern(color);
 //            Log.w("ceshi","getColor:"+pattern.getClass().getSimpleName());
@@ -294,11 +295,22 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         }
 
         float[] floats = colorSpace.toRGB(color.getComponents());
-        int r = Math.round(floats[0] * 255)&0xff;
-        int g = Math.round(floats[1] * 255)&0xff;
-        int b = Math.round(floats[2] * 255)&0xff;
-        //Log.w("ceshi","r:"+r+",g:"+g+",b:"+b);
+
+        int r = getColorInt(floats[0]);
+        int g = getColorInt(floats[1]);
+        int b = getColorInt(floats[2]);
+//        Log.w("ceshi","r:"+r+",g:"+g+",b:"+b);
         return Color.rgb(r, g, b);
+    }
+
+    private int getColorInt(float value) {
+        if (value<0) {
+            return 0;
+        } else if (value>1) {
+            return 255;
+        } else {
+            return Math.round(value * 255)&0xff;
+        }
     }
 
     // sets the clipping path using caching for performance, we track lastClip manually because
@@ -395,7 +407,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     protected void showFontGlyph(Matrix textRenderingMatrix, PDFont font, int code, String unicode,
         Vector displacement) throws IOException
     {
-//        Log.w("ceshi","unicode:"+unicode);
+//        Log.w("icc_ceshi","unicode:"+unicode);
         AffineTransform at = textRenderingMatrix.createAffineTransform();
         at.concatenate(font.getFontMatrix().createAffineTransform());
 
@@ -420,11 +432,6 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         PDGraphicsState state = getGraphicsState();
         RenderingMode renderingMode = state.getTextState().getRenderingMode();
 
-//        test++;
-//        if (test!=2) {
-//            return;
-//        }
-//        Log.w("ceshi",test+"__Glyph2D::"+glyph2D.getClass().getSimpleName());
         Path path = glyph2D.getPathForCharacterCode(code);
         if (path != null)
         {
@@ -684,13 +691,10 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     public void fillPath(Path.FillType windingRule) throws IOException
     {
         test++;
-//        Log.w("ceshi","fillPath--------------"+test);
-//        if (test != 999) {
-//            return;
-//        }
-//        test++;
 
+//        Log.w("ceshi","fillPath--------------"+test);
         paint.setAlpha((int)(getGraphicsState().getNonStrokeAlphaConstant()*255));
+//        Log.w("ceshi","alpha--------------"+(int)(getGraphicsState().getNonStrokeAlphaConstant()*255));
         canvas.save();
 
         linePath.setFillType(windingRule);
@@ -873,12 +877,14 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         {
             if (subsamplingAllowed)
             {
+                Log.w("ceshi","drawBitmap222");
                 int subsampling = getSubsampling(pdImage, at);
                 // draw the subsampled image
                 drawBitmap(pdImage.getImage(null, subsampling), at);
             }
             else
             {
+                Log.w("ceshi","drawBitmap111");
                 // subsampling not allowed, draw the image
                 drawBitmap(pdImage.getImage(), at);
             }
@@ -1304,13 +1310,14 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         }
         TransparencyGroup group =
             new TransparencyGroup(form, false, getGraphicsState().getCurrentTransformationMatrix(), null);
-//        Bitmap image = group.getImage();
-//        if (image == null)
-//        {
+        Bitmap image = group.getImage();
+        if (image == null)
+        {
             // image is empty, don't bother
-//            return;
-//        }
+            return;
+        }
 
+        paint.setAlpha((int)(getGraphicsState().getNonStrokeAlphaConstant()*255));
 //        graphics.setComposite(getGraphicsState().getNonStrokingJavaComposite());
         setClip2();
 
@@ -1358,9 +1365,9 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         {
             if (isContentRendered())
             {
-//                graphics.drawImage(image, null, null);
+                android.graphics.Matrix matrix = new android.graphics.Matrix();
+                canvas.drawBitmap(image, matrix, paint);
             }
-
         }
 
 //        graphics.setTransform(prev);
@@ -1371,15 +1378,15 @@ public class PageDrawer extends PDFGraphicsStreamEngine
      **/
     private final class TransparencyGroup
     {
-//        private final Bitmap image;
+        private final Bitmap image;
 //        private final PDRectangle bbox;
 
-//        private final int minX;
-//        private final int minY;
-//        private final int maxX;
-//        private final int maxY;
-//        private final int width;
-//        private final int height;
+        private final int minX;
+        private final int minY;
+        private final int maxX;
+        private final int maxY;
+        private final int width;
+        private final int height;
         private final float scaleX;
         private final float scaleY;
 
@@ -1398,6 +1405,8 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         private TransparencyGroup(PDTransparencyGroup form, boolean isSoftMask, Matrix ctm,
             PDColor backdropColor) throws IOException
         {
+            Canvas savedCanvas = canvas;
+            Log.w("ceshi","TransparencyGroup-----");
 //            Graphics2D g2dOriginal = graphics;
 //            Area lastClipOriginal = lastClip;
 
@@ -1408,24 +1417,28 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             Path transformedBox = form.getBBox().transform(transform);
 
             // clip the bbox to prevent giant bboxes from consuming all memory
+//            canvas.getWidth()
+            Region clip = getGraphicsState().getCurrentClippingPath();
 //            Area clip = (Area)getGraphicsState().getCurrentClippingPath().clone();
 //            clip.intersect(new Area(transformedBox));
 //            Rectangle2D clipRect = clip.getBounds2D();
+            Rect bounds = clip.getBounds();
             Matrix m = new Matrix(xform);
             scaleX = Math.abs(m.getScalingFactorX());
             scaleY = Math.abs(m.getScalingFactorY());
-//            if (clipRect.isEmpty())
-//            {
-//                image = null;
+            if (clip.isEmpty())
+            {
+                Log.w("ceshi","提前退出了");
+                image = null;
 //                bbox = null;
-//                minX = 0;
-//                minY = 0;
-//                maxX = 0;
-//                maxY = 0;
-//                width = 0;
-//                height = 0;
-//                return;
-//            }
+                minX = 0;
+                minY = 0;
+                maxX = 0;
+                maxY = 0;
+                width = 0;
+                height = 0;
+                return;
+            }
 //            this.bbox = new PDRectangle((float)clipRect.getX(), (float)clipRect.getY(),
 //                (float)clipRect.getWidth(), (float)clipRect.getHeight());
 
@@ -1433,25 +1446,25 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             AffineTransform dpiTransform = AffineTransform.getScaleInstance(scaleX, scaleY);
 //            Rectangle2D bounds = dpiTransform.createTransformedShape(clip.getBounds2D()).getBounds2D();
 
-//            minX = (int) Math.floor(bounds.getMinX());
-//            minY = (int) Math.floor(bounds.getMinY());
-//            maxX = (int) Math.floor(bounds.getMaxX()) + 1;
-//            maxY = (int) Math.floor(bounds.getMaxY()) + 1;
+            minX = (int) Math.floor(bounds.left);
+            minY = (int) Math.floor(bounds.top);
+            maxX = (int) Math.floor(bounds.right) + 1;
+            maxY = (int) Math.floor(bounds.bottom) + 1;
 
-//            width = maxX - minX;
-//            height = maxY - minY;
+            width = maxX - minX;
+            height = maxY - minY;
 
             // FIXME - color space
-            if (isGray(form.getGroup().getColorSpace()))
-            {
+//            if (isGray(form.getGroup().getColorSpace()))
+//            {
 //                image = create2ByteGrayAlphaImage(width, height);
-            }
-            else
-            {
-//                image = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-            }
+//            }
+//            else
+//            {
+                image = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+//            }
 //            Graphics2D g = image.createGraphics();
-
+            Canvas g = new Canvas(image);
             boolean needsBackdrop = !isSoftMask && !form.getGroup().isIsolated() &&
                 hasBlendMode(form, new HashSet<COSBase>());
             Bitmap backdropImage = null;
@@ -1465,15 +1478,15 @@ public class PageDrawer extends PDFGraphicsStreamEngine
                     // Use the current page as the parent group.
                     backdropImage = renderer.getPageImage();
                     needsBackdrop = backdropImage != null;
-//                    backdropX = minX;
-//                    backdropY = (backdropImage != null) ? (backdropImage.getHeight() - maxY) : 0;
+                    backdropX = minX;
+                    backdropY = (backdropImage != null) ? (backdropImage.getHeight() - maxY) : 0;
                 }
                 else
                 {
                     TransparencyGroup parentGroup = transparencyGroupStack.peek();
-//                    backdropImage = parentGroup.image;
-//                    backdropX = minX - parentGroup.minX;
-//                    backdropY = parentGroup.maxY - maxY;
+                    backdropImage = parentGroup.image;
+                    backdropX = minX - parentGroup.minX;
+                    backdropY = parentGroup.maxY - maxY;
                 }
             }
 
@@ -1481,9 +1494,10 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             if (needsBackdrop)
             {
                 // backdropImage must be included in group image but not in group alpha.
-//                g.drawImage(backdropImage, 0, 0, width, height,
-//                    backdropX, backdropY, backdropX + width, backdropY + height, null);
-//                g = new GroupGraphics(image, g);
+//                g = new Canvas(image);
+//                g.drawBitmap(backdropImage,new Rect(0,0,width,height),new Rect(backdropX, backdropY, backdropX + width, backdropY + height),paint);
+//                g.drawBitmap(backdropImage, 0, 0, width, height,
+//                    backdropX, backdropY, backdropX + width, backdropY + height, paint);
             }
             if (isSoftMask && backdropColor != null)
             {
@@ -1503,6 +1517,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 
             // apply device transform (DPI)
             // the initial translation is ignored, because we're not writing into the initial graphics device
+//            g.scale(scaleX,scaleY);
 //            g.transform(dpiTransform);
 
             AffineTransform xformOriginal = xform;
@@ -1519,7 +1534,9 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 
             // adjust the origin
 //            g.translate(-clipRect.getX(), -clipRect.getY());
-
+            canvas = g;
+//            backdropImage = renderer.getPageImage();
+//            canvas.drawBitmap(backdropImage,0,0,paint);
 //            graphics = g;
             setRenderingHints();
             try
@@ -1543,7 +1560,8 @@ public class PageDrawer extends PDFGraphicsStreamEngine
                 flipTG = oldFlipTG;
 //                lastClip = lastClipOriginal;
 //                graphics.dispose();
-//                graphics = g2dOriginal;
+//                image.recycle();
+                canvas = savedCanvas;
                 clipWindingRule = clipWindingRuleOriginal;
                 linePath = linePathOriginal;
                 pageSize = pageSizeOriginal;
@@ -1579,10 +1597,10 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             return false;
         }
 
-//        public Bitmap getImage()
-//        {
-//            return image;
-//        }
+        public Bitmap getImage()
+        {
+            return image;
+        }
 
 //        public PDRectangle getBBox()
 //        {

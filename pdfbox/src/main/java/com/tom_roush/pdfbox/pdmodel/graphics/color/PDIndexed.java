@@ -88,8 +88,8 @@ public final class PDIndexed extends PDSpecialColorSpace
         array = indexedArray;
         // don't call getObject(1), we want to pass a reference if possible
         // to profit from caching (PDFBOX-4149)
-        Log.w("ceshi","PDIndexed---baseColorSpace");
         baseColorSpace = PDColorSpace.create(array.get(1), resources);
+        Log.w("ceshi","PDIndexed---baseColorSpace=="+baseColorSpace.getClass().getSimpleName());
         readColorTable();
         initRgbColorTable();
     }
@@ -143,7 +143,7 @@ public final class PDIndexed extends PDSpecialColorSpace
         rgbColorTable = new int[actualMaxIndex + 1][3];
         for (int i = 0, n = actualMaxIndex; i <= n; i++)
         {
-            for (int c = 0; c < numBaseComponents; c++)
+            for (int c = 0; c < 3; c++)
             {
                 rgbColorTable[i][c] = (int)(colorTable[i][c] * 255f);
 //                base[c] = (int)(colorTable[i][c] * 255f);
@@ -194,16 +194,11 @@ public final class PDIndexed extends PDSpecialColorSpace
 
         Bitmap rgbImage = Bitmap.createBitmap(width,height, Bitmap.Config.ARGB_8888);
         int[] src = new int[width];
-        int test = 0;
         for (int y = 0; y < height; y++)
         {
             raster.getPixels(src,0,width,0,y,width,1);
             for (int x = 0; x < width; x++)
             {
-                test++;
-                if (test<100) {
-                    Log.w("color_test","src[x]:"+raster.getPixel(x,y));
-                }
                 // lookup
                 int index = Math.min(src[x]>>24&0xff, actualMaxIndex);
                 int color = Color.argb(255,rgbColorTable[index][0],rgbColorTable[index][1],rgbColorTable[index][2]);
@@ -215,16 +210,11 @@ public final class PDIndexed extends PDSpecialColorSpace
 
     public Bitmap toRGBImage(int[] raster,int width,int height) throws IOException {
         Bitmap rgbImage = Bitmap.createBitmap(width,height, Bitmap.Config.ARGB_8888);
-        int test = 0;
         for (int y = 0; y < height; y++)
         {
             for (int x = 0; x < width; x++)
             {
-                test++;
-                if (test<100) {
-                    Log.w("color_test","src[x]:"+raster[test]);
-                }
-                int index = Math.min(raster[x+y*width], actualMaxIndex);
+                int index = Math.max(Math.min(raster[x+y*width], actualMaxIndex),0);
                 int color = Color.argb(255,rgbColorTable[index][0],rgbColorTable[index][1],rgbColorTable[index][2]);
                 rgbImage.setPixel(x,y,color);
             }

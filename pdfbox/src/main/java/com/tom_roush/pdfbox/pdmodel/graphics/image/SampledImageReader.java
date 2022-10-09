@@ -24,6 +24,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.Log;
 
+import com.gemalto.jp2.JP2Decoder;
 import com.tom_roush.harmony.javax.imageio.stream.ImageInputStream;
 import com.tom_roush.harmony.javax.imageio.stream.MemoryCacheImageInputStream;
 import com.tom_roush.pdfbox.cos.COSArray;
@@ -188,13 +189,15 @@ final class SampledImageReader
 
         // get parameters, they must be valid or have been repaired
         final PDColorSpace colorSpace = pdImage.getColorSpace();
-        Log.w("ceshi","colorSpace:"+colorSpace.getClass().getSimpleName());
+//        Log.w("ceshi","colorSpace:"+colorSpace.getClass().getSimpleName());
         final int numComponents = colorSpace.getNumberOfComponents();
         final int width = (int) Math.ceil(clipped.width() / subsampling);
         final int height = (int) Math.ceil(clipped.height() / subsampling);
         final int bitsPerComponent = pdImage.getBitsPerComponent();
         final float[] decode = getDecodeArray(pdImage);
 
+//        Log.w("ceshi","numComponents:"+numComponents+"    ,"+width+"    ,"+height);
+//        Log.w("ceshi","pdImage.getSuffix()"+pdImage.getSuffix());
         if (width <= 0 || height <= 0 || pdImage.getWidth() <= 0 || pdImage.getHeight() <= 0)
         {
             throw new IOException("image width and height must be positive");
@@ -213,18 +216,37 @@ final class SampledImageReader
             // in depth to 8bpc as they will be drawn to TYPE_INT_RGB images anyway. All code
             // in PDColorSpace#toRGBImage expects an 8-bit range, i.e. 0-255.
             final float[] defaultDecode = pdImage.getColorSpace().getDefaultDecode(8);
-            if (pdImage.getSuffix() != null && pdImage.getSuffix().equals("jpg") && subsampling == 1)
+            if (pdImage.getSuffix() != null && subsampling == 1)
             {
-                if (pdImage.getColorSpace() instanceof PDDeviceCMYK) {
-                    Log.w("ceshi","PDDeviceCMYK????");
+                if (pdImage.getSuffix().equals("jpg")) {
+                    if (pdImage.getColorSpace() instanceof PDDeviceCMYK) {
+                        InputStream inputStream = pdImage.createInputStream();
+                        byte[] buff = new byte[inputStream.available()];
+                        Log.w("ceshi","buff.length=="+buff.length);
+                        IOUtils.populateBuffer(inputStream,buff);
+                        return ((PDDeviceCMYK)pdImage.getColorSpace()).toRGBImage(new JpegUtils().converData(buff),width,height);
+                    }
+                    return BitmapFactory.decodeStream(pdImage.createInputStream());
+                } else if (pdImage.getSuffix().equals("jpx")){
                     InputStream inputStream = pdImage.createInputStream();
                     byte[] buff = new byte[inputStream.available()];
                     IOUtils.populateBuffer(inputStream,buff);
-                    return ((PDDeviceCMYK)pdImage.getColorSpace()).toRGBImage(new JpegUtils().converData(buff),width,height);
+                    int[] bank = new int[pdImage.getWidth()*pdImage.getHeight()];
+                    int index = 0;
+                    for (int h=0;h<pdImage.getHeight();h++) {
+                        for (int w=0;w<pdImage.getWidth();w++) {
+                            if (numComponents == 1) {
+                                bank[index] = Color.argb(buff[index*3]&0xff,buff[index*3]&0xff,buff[index*3]&0xff,buff[index*3]&0xff);
+                            } else {
+                                bank[index] = Color.argb(255,buff[index*3]&0xff,buff[index*3+1]&0xff,buff[index*3+2]&0xff);
+                            }
+                            index+=1;
+                        }
+                    }
+                    return Bitmap.createBitmap(bank,pdImage.getWidth(),pdImage.getHeight(), Bitmap.Config.ARGB_8888);
                 }
-                Log.w("ceshi","NotPDDeviceCMYK????");
-                return BitmapFactory.decodeStream(pdImage.createInputStream());
             }
+
             else if (bitsPerComponent == 8 && Arrays.equals(decode, defaultDecode) &&
                 colorKey == null)
             {
@@ -362,6 +384,7 @@ final class SampledImageReader
     private static Bitmap from8bit(PDImage pdImage, Rect clipped, final int subsampling,
         final int width, final int height) throws IOException
     {
+        Log.w("ceshi","from8bit");
         int currentSubsampling = subsampling;
         DecodeOptions options = new DecodeOptions(currentSubsampling);
         options.setSourceRegion(clipped);
@@ -429,7 +452,7 @@ final class SampledImageReader
                     }
                     else if (numComponents == 1)
                     {
-                        int in = tempBytes[tempBytesIdx] & 0xFF;
+                        int in = tempBytes[tempBytesIdx] & 0xff;
                         if (pdImage.getColorSpace() instanceof PDIndexed){
                             banks[i] = in;
                         } else {
@@ -444,8 +467,6 @@ final class SampledImageReader
             }
             Bitmap raster = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
             raster.setPixels(banks, 0, width, 0 ,0, width, height);
-            // use the color space to convert the image to RGB
-//            return pdImage.getColorSpace().toRGBImage(raster); TODO: PdfBox-Android
             return raster;
         }
         finally
@@ -464,12 +485,13 @@ final class SampledImageReader
                                          final int subsampling, final int width, final int height)
             throws IOException
     {
+        Log.w("ceshi","forAny");
         int currentSubsampling = subsampling;
         final PDColorSpace colorSpace = pdImage.getColorSpace();
         final int numComponents = colorSpace.getNumberOfComponents();
         final int bitsPerComponent = pdImage.getBitsPerComponent();
         final float[] decode = getDecodeArray(pdImage);
-
+        Log.w("ceshi","forAny-numComponents="+numComponents);
         DecodeOptions options = new DecodeOptions(currentSubsampling);
         options.setSourceRegion(clipped);
         // read bit stream

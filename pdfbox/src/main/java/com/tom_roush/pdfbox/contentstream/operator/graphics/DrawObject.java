@@ -52,7 +52,7 @@ public final class DrawObject extends GraphicsOperatorProcessor
             return;
         }
         COSName objectName = (COSName) base0;
-        Log.w("ceshi","objectName:"+objectName.getName());
+//        Log.w("ceshi","objectName:"+objectName.getName());
         PDXObject xobject = context.getResources().getXObject(objectName);
 
         if (xobject == null)

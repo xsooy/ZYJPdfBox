@@ -16,6 +16,7 @@
  */
 package com.tom_roush.pdfbox.pdmodel.graphics.state;
 
+import android.graphics.BlendModeColorFilter;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
@@ -591,7 +592,7 @@ public class PDGraphicsState implements Cloneable
 
     public void intersectClippingPath(Path path,float scale)
     {
-        Log.w("ceshi","intersectClippingPath");
+//        Log.w("ceshi","intersectClippingPath");
         RectF bounds = new RectF();
         android.graphics.Matrix matrix = new android.graphics.Matrix();
         matrix.setScale(scale,scale);
@@ -639,7 +640,7 @@ public class PDGraphicsState implements Cloneable
                 Log.w("ceshi","生成区域失败222:"+boundsRounded);
             }
         }
-        Log.w("ceshi","intersectClippingPath"+r);
+//        Log.w("ceshi","intersectClippingPath"+r);
         intersectClippingPath(r);
         // TODO: PdfBox-Android Verify correct behavior
     }
@@ -677,6 +678,7 @@ public class PDGraphicsState implements Cloneable
 //    public Composite getStrokingJavaComposite() TODO: PdfBox-Android
 
 //    public Composite getNonStrokingJavaComposite() TODO: PdfBox-Android
+
 
     /**
      * This will get the transfer function.

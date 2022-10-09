@@ -229,9 +229,9 @@ public class CFFCIDFont extends CFFFont
 //        Log.w("ceshi","getType2CharString"+(type2==null));
         if (type2 == null)
         {
-            Log.w("ceshi","charset=="+charset.getClass().getSimpleName());
+//            Log.w("ceshi","charset=="+charset.getClass().getSimpleName());
             int gid = charset.getGIDForCID(cid);
-            Log.w("ceshi","cid:::"+cid+",gid:::"+gid);
+//            Log.w("ceshi","cid:::"+cid+",gid:::"+gid);
             byte[] bytes = charStrings[gid];
             if (bytes == null)
             {
