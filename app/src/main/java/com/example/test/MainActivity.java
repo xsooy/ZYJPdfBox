@@ -96,7 +96,6 @@ public class MainActivity extends AppCompatActivity {
             fileDescriptor.canDetectErrors();
             if (!isSys) {
                 PDDocument document = PDDocument.load(new File(path));
-//            PDPageTree pdPageTree = document.getPages();
                 YJPDFRenderer renderer = new YJPDFRenderer(document);
                 renderer.renderImage(bitmap,0);
                 String filePath = getPreviewDir()+"temp.jpg";
@@ -129,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
                     paint.setColor(Color.WHITE);
                     paint.setStyle(Paint.Style.FILL);
                     PDFRenderer renderer = new PDFRenderer(document);
-                    Bitmap bitmap = renderer.renderImageWithDPI(0, 300);
+                    Bitmap bitmap = renderer.renderImageWithDPI(1, 300);
                     String filePath = getPreviewDir()+"1.jpg";
                     saveBitmap(bitmap,filePath);
                     imageView.post(()->{

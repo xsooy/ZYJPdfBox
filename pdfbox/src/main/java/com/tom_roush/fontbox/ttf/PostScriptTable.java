@@ -143,7 +143,7 @@ public class PostScriptTable extends TTFTable
         }
         else if (formatType == 3.0f)
         {
-            Log.w("ceshi","错误码是这");
+//            Log.w("ceshi","错误码是这");
             // no postscript information is provided.
             Log.d("PdfBox-Android", "No PostScript name information is provided for the font " + font.getName());
         }

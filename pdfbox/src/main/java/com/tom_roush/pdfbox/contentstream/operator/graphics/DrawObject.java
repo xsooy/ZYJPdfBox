@@ -62,7 +62,7 @@ public final class DrawObject extends GraphicsOperatorProcessor
         else if (xobject instanceof PDImageXObject)
         {
             Log.w("ceshi","DrawObject1111");
-//            if (objectName.getName().equals("Im3")) {
+//            if (objectName.getName().equals("Im20")) {
                 PDImageXObject image = (PDImageXObject)xobject;
                 context.drawImage(image);
 //            }

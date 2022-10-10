@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 
@@ -588,6 +590,19 @@ public class COSArray extends COSBase implements Iterable<COSBase>, COSUpdateInf
         for (int i = 0; i < size(); i++)
         {
             retList.add(get(i));
+        }
+        return retList;
+    }
+
+    public List<String> toCOSNameStringList()
+    {
+        List<String> retList = new ArrayList();
+        for (int i = 0; i < size(); i++)
+        {
+            COSBase base = get(i);
+            if (base instanceof COSName) {
+                retList.add(((COSName) base).getName());
+            }
         }
         return retList;
     }

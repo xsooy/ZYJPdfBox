@@ -88,7 +88,10 @@ public class NormalColorSpace {
             {
                 rgb[i] = rgb[i] * 12.92f;
             }
+            if (rgb[i]>1.0f) rgb[i] = 1.0f;
+            if (rgb[i]<0.0f) rgb[i] = 0.0f;
         }
+
 //        Log.w("ceshi",String.format("r:%f,g:%f,b:%f",rgb[0],rgb[1],rgb[2]));
         return rgb;
     }

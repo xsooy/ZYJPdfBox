@@ -7,6 +7,7 @@ import android.util.Log;
 import com.tom_roush.harmony.awt.geom.AffineTransform;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBoolean;
+import com.tom_roush.pdfbox.util.Matrix;
 import com.xsooy.icc.IccUtils;
 
 import java.io.IOException;
@@ -25,6 +26,7 @@ public class AxialShadingContext extends ShadingContext {
     private final int factor;
 
     private final int[] colorTable;
+    private AffineTransform rat;
 
     public AxialShadingContext(PDShadingType2 shading, Rect deviceBounds) throws IOException {
         super(shading);
@@ -59,18 +61,7 @@ public class AxialShadingContext extends ShadingContext {
         d1d0 = domain[1] - domain[0];
         denom = Math.pow(x1x0, 2) + Math.pow(y1y0, 2);
 
-//        try
-//        {
-            // get inverse transform to be independent of current user / device space
-            // when handling actual pixels in getRaster()
-//            rat = matrix.createAffineTransform().createInverse();
-//            rat.concatenate(xform.createInverse());
-//        }
-//        catch (AffineTransform.NoninvertibleTransformException ex)
-//        {
-//            LOG.error(ex.getMessage() + ", matrix: " + matrix, ex);
-//            rat = new AffineTransform();
-//        }
+
 
         // shading space -> device space
 //        AffineTransform shadingToDevice = (AffineTransform)xform.clone();
@@ -79,10 +70,32 @@ public class AxialShadingContext extends ShadingContext {
         // worst case for the number of steps is opposite diagonal corners, so use that
         double dist = Math.sqrt(Math.pow(deviceBounds.right - deviceBounds.left, 2) +
                 Math.pow(deviceBounds.bottom - deviceBounds.top, 2));
+
         factor = (int) Math.ceil(dist);
+
+//        Log.w("ceshi","factor=="+factor);
 
         // build the color table for the given number of steps
         colorTable = calcColorTable();
+    }
+
+
+
+    public void setTransform(Matrix matrix,AffineTransform xform) {
+        try
+        {
+            // get inverse transform to be independent of current user / device space
+            // when handling actual pixels in getRaster()
+            Log.w("ceshi",matrix.toString());
+            Log.w("ceshi","xform=="+xform);
+            rat = matrix.createAffineTransform().createInverse();
+            rat.concatenate(xform.createInverse());
+        }
+        catch (AffineTransform.NoninvertibleTransformException ex)
+        {
+//            LOG.error(ex.getMessage() + ", matrix: " + matrix, ex);
+            rat = new AffineTransform();
+        }
     }
 
     private int[] calcColorTable() throws IOException
@@ -101,11 +114,14 @@ public class AxialShadingContext extends ShadingContext {
 //            iccUtils.loadProfile("/storage/emulated/0/Android/data/com.example.test/files/HFA_Eps15000_MK_Agave-Sisal.icc");
 //            iccUtils.loadProfile2("/storage/emulated/0/Android/data/com.example.test/files/ISOcoated_v2_300_bas.icc","/storage/emulated/0/Android/data/com.example.test/files/HFA_Eps15000_MK_Agave-Sisal.icc");
 
-            StringBuilder builder = new StringBuilder();
+//            StringBuilder builder = new StringBuilder();
             for (int i = 0; i <= factor; i++)
             {
                 float t = domain[0] + d1d0 * i / factor;
+//                Log.w("ceshi","t======"+t);
                 float[] values = axialShadingType.evalFunction(t);
+//                Log.w("ceshi",String.format("value0:%f,  %f,  %f",values[0],values[1],values[2]));
+//                Log.w("ceshi","values.length"+values.length);
 //                builder.delete(0,builder.length());
 //                for (float jj:values)
 //                    builder.append(jj+",");
@@ -123,7 +139,7 @@ public class AxialShadingContext extends ShadingContext {
 //                float[] test = new float[] {(map[i]>>24&0xff)/255.f, (map[i]>>16&0xff)/255.f,(map[0]>>8&0xff)/255.f,(map[0]&0xff)/255.f};
                 map[i] = convertToRGB(values);
 
-//                Log.w("ceshi",String.format("r:%d,g:%d,b:%d",map[i]>>16&0xff,map[0]>>8&0xff,map[0]&0xff));
+//                Log.w("ceshi",String.format("r:%d,g:%d,b:%d",map[i]>>16&0xff,map[i]>>8&0xff,map[i]&0xff));
             }
         }
         return map;
@@ -146,7 +162,8 @@ public class AxialShadingContext extends ShadingContext {
                 useBackground = false;
                 values[0] = x + i;
                 values[1] = y + j;
-//                rat.transform(values, 0, values, 0, 1);
+                if (rat!=null)
+                    rat.transform(values, 0, values, 0, 1);
                 double inputValue = x1x0 * (values[0] - coords[0]) + y1y0 * (values[1] - coords[1]);
                 // TODO this happens if start == end, see PDFBOX-1442
                 if (Double.compare(denom, 0) == 0)

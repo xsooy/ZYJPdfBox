@@ -129,7 +129,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     private Path linePath = new Path();
 
     // last clipping path
-    private Region lastClip;
+    private Path lastClip;
 
     // shapes of glyphs being drawn to be used for clipping
     private List<Path> textClippings;
@@ -317,36 +317,10 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     // Graphics2D#getClip() returns a new object instead of the same one passed to setClip
     private void setClip()
     {
-        Region clippingPath = getGraphicsState().getCurrentClippingPath();
+        Path clippingPath = getGraphicsState().getCurrentClippingPath();
         if (clippingPath != lastClip)
         {
-//            Log.w("ceshi","canvas.clipPath:"+clippingPath);
-            Path path = clippingPath.getBoundaryPath();
-//            android.graphics.Matrix matrix = new android.graphics.Matrix();
-//            matrix.setScale(1/scale,1/scale);
-//            path.transform(matrix);
-            canvas.clipPath(path);//TODO: PdfBox-Android
-//            lastClip.setEmpty();
-            lastClip = clippingPath;
-        }
-    }
-
-    private void setClip2()
-    {
-        Region clippingPath = getGraphicsState().getCurrentClippingPath();
-//        Log.w("ceshi","clippingPath:"+clippingPath);
-        if (clippingPath != lastClip)
-        {
-//            Log.w("ceshi","canvas.clipPath:"+clippingPath);
-            Path path = clippingPath.getBoundaryPath();
-            android.graphics.Matrix matrix = new android.graphics.Matrix();
-            matrix.setScale(1/scale,1/scale);
-            path.transform(matrix);
-            RectF rectF = new RectF();
-            path.computeBounds(rectF,true);
-//            Log.w("ceshi","setClip2====="+rectF);
-            canvas.clipPath(path);//TODO: PdfBox-Android
-//            lastClip.setEmpty();
+            canvas.clipPath(clippingPath);
             lastClip = clippingPath;
         }
     }
@@ -355,7 +329,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     public void beginText() throws IOException
     {
         canvas.save();
-//        setClip2();
+//        setClip();
         beginTextClip();
     }
 
@@ -461,7 +435,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
                 {
 //                    Log.w("ceshi","字体路径111："+rectF);
                     paint.setColor(getNonStrokingColor());
-                    setClip2();
+                    setClip();
                     paint.setStyle(Paint.Style.FILL);
                     canvas.drawPath(path, paint);
                 }
@@ -470,7 +444,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //                    Log.w("ceshi","字体路径222："+rectF);
                     paint.setColor(getStrokingColor());
                     setStroke();
-                    setClip2();
+                    setClip();
                     paint.setStyle(Paint.Style.STROKE);
                     canvas.drawPath(path, paint);
                 }
@@ -675,7 +649,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         paint.setStyle(Paint.Style.STROKE);
         paint.setColor(getStrokingColor());
         canvas.save();
-        setClip2();
+        setClip();
         //TODO bbox of shading pattern should be used here? (see fillPath)
         if (isContentRendered())
         {
@@ -691,7 +665,9 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     public void fillPath(Path.FillType windingRule) throws IOException
     {
         test++;
-
+//        if (test!=101) {
+//            return;
+//        }
 //        Log.w("ceshi","fillPath--------------"+test);
         paint.setAlpha((int)(getGraphicsState().getNonStrokeAlphaConstant()*255));
 //        Log.w("ceshi","alpha--------------"+(int)(getGraphicsState().getNonStrokeAlphaConstant()*255));
@@ -716,13 +692,14 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         {
             paint.setStyle(Paint.Style.FILL);
             if (getGraphicsState().getNonStrokingColor().getColorSpace() instanceof PDPattern) {
+//                Log.w("ceshi","fillPath2222");
                 PDColorSpace colorSpace = getGraphicsState().getNonStrokingColor().getColorSpace();
                 PDAbstractPattern pattern = ((PDPattern)colorSpace).getPattern(getGraphicsState().getNonStrokingColor());
                 PDShadingPattern shadingPattern = (PDShadingPattern)pattern;
                 PDShading shading = shadingPattern.getShading();
                 //轴向
                 if (shading instanceof PDShadingType2) {
-                    getGraphicsState().intersectClippingPath(linePath,scale);
+                    getGraphicsState().intersectClippingPath(linePath);
                     canvas.scale(1/scale,1/scale);
                     Rect rect = new Rect((int)(bounds.left*scale),(int)(bounds.top*scale),(int)(bounds.right*scale),(int)(bounds.bottom*scale));
                     Rect rect2 = new Rect((int)(bounds.left*scale),(int)(canvas.getHeight()-(bounds.bottom*scale)),(int)(bounds.right*scale),(int)(canvas.getHeight()-(bounds.top*scale)));
@@ -738,7 +715,10 @@ public class PageDrawer extends PDFGraphicsStreamEngine
                     }
                 }
             } else {
-                setClip2();
+//                Log.w("ceshi","fillPath111");
+                setClip();
+//                float[] value = getGraphicsState().getNonStrokingColor().getComponents();
+//                Log.w("ceshi",String.format("value:%f,%f,%f,%f",value[0],value[1],value[2],value[3]));
                 paint.setColor(getNonStrokingColor());
                 canvas.drawPath(linePath, paint);
             }
@@ -832,7 +812,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             //TODO: zyj 生成了有损路径
 //            if (test==25) {
 //                Log.w("ceshi","生成路径,scale:"+scale);
-                getGraphicsState().intersectClippingPath(linePath,scale);
+                getGraphicsState().intersectClippingPath(linePath);
 //            } else
 //                getGraphicsState().intersectClippingPath(linePath);
 
@@ -937,7 +917,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         paint.setAlpha((int)(getGraphicsState().getNonStrokeAlphaConstant()*255));
         paint.setColor(getNonStrokingColor());
 //        graphics.setComposite(getGraphicsState().getNonStrokingJavaComposite());
-        setClip2();
+        setClip();
         AffineTransform imageTransform = new AffineTransform(at);
         PDSoftMask softMask = getGraphicsState().getSoftMask();
         if( softMask != null )
@@ -1060,7 +1040,9 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             Log.e("PdfBox-Android", "shading " + shadingName + " does not exist in resources dictionary");
             return;
         }
+        Log.w("ceshi","shadingFill===="+shading.getShadingType());
         Matrix ctm = getGraphicsState().getCurrentTransformationMatrix();
+
 //        Paint paint = shading.toPaint(ctm);
 //        paint = applySoftMaskToPaint(paint, getGraphicsState().getSoftMask());
 
@@ -1080,6 +1062,51 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         }
         else
         {
+            if (shading instanceof PDShadingType2) {
+                canvas.save();
+//                canvas.restore();
+//                getGraphicsState().intersectClippingPath(linePath);
+                Path path = getGraphicsState().getCurrentClippingPath();
+//                getGraphicsState().intersectClippingPath(path);
+                RectF bounds = new RectF();
+                path.computeBounds(bounds,true);
+                canvas.scale(1/scale,1/scale);
+                Log.w("ceshi","bounds==="+bounds);
+                Rect rect = new Rect((int)(bounds.left*scale+0.5f),(int)(bounds.top*scale+0.5f),(int)(bounds.right*scale+0.5f),(int)(bounds.bottom*scale+0.5f));
+                Rect rect2 = new Rect((int)(bounds.left*scale+0.5f),(int)(canvas.getHeight()-(bounds.bottom*scale)+0.5f),(int)(bounds.right*scale+0.5f),(int)(canvas.getHeight()-(bounds.top*scale+0.5f)));
+
+//                paint.setColor(Color.GREEN);
+//                canvas.drawRect(rect,paint);
+//                COSArray array = ((PDShadingType2) shading).getCoords();
+//                for (COSBase base:array){
+//                    Log.w("ceshi","rect===="+base);
+//                }
+//                Log.w("ceshi","rect===="+((PDShadingType2) shading).getCoords().get(0));
+//                Log.w("ceshi","rect===="+((PDShadingType2) shading).getCoords().get(1));
+                Log.w("ceshi","rect2===="+rect2);
+//                setClip();
+                android.graphics.Matrix matrix = new android.graphics.Matrix();
+                matrix.setScale(scale,scale);
+                path.transform(matrix);
+//                RectF bounds = new RectF();
+                path.computeBounds(bounds,true);
+                Log.w("ceshi","bounds==="+bounds);
+                canvas.clipPath(path, Region.Op.INTERSECT);
+
+                AxialShadingContext axialShadingContext = new AxialShadingContext((PDShadingType2) shading,rect2);
+                axialShadingContext.setTransform(ctm,new AffineTransform(4.166666507720948,0.0, 0.0, -4.166666507720948, 0.0, 3507.874927220342));
+                for (int y=rect.bottom;y>rect.top;y--) {
+                    int[] data = axialShadingContext.getRaster(rect.left,canvas.getHeight()-y,rect.right-rect.left,1);
+                    paint.setStrokeWidth(1f);
+                    for (int i=0;i<data.length;i++) {
+                        paint.setColor(data[i]|0xff000000);
+                        canvas.drawPoint(rect.left+i,y,paint);
+                    }
+                }
+                canvas.restore();
+            }
+//            paint.setColor(Color.GREEN);
+//            canvas.drawPath(getGraphicsState().getCurrentClippingPath(),paint);
 //            graphics.fill(getGraphicsState().getCurrentClippingPath());
         }
     }
@@ -1319,7 +1346,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 
         paint.setAlpha((int)(getGraphicsState().getNonStrokeAlphaConstant()*255));
 //        graphics.setComposite(getGraphicsState().getNonStrokingJavaComposite());
-        setClip2();
+        setClip();
 
         // both the DPI xform and the CTM were already applied to the group, so all we do
         // here is draw it directly onto the Graphics2D device at the appropriate position
@@ -1418,11 +1445,13 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 
             // clip the bbox to prevent giant bboxes from consuming all memory
 //            canvas.getWidth()
-            Region clip = getGraphicsState().getCurrentClippingPath();
+            Path clip = getGraphicsState().getCurrentClippingPath();
 //            Area clip = (Area)getGraphicsState().getCurrentClippingPath().clone();
 //            clip.intersect(new Area(transformedBox));
 //            Rectangle2D clipRect = clip.getBounds2D();
-            Rect bounds = clip.getBounds();
+
+            RectF bounds = new RectF();
+            clip.computeBounds(bounds, true);
             Matrix m = new Matrix(xform);
             scaleX = Math.abs(m.getScalingFactorX());
             scaleY = Math.abs(m.getScalingFactorY());

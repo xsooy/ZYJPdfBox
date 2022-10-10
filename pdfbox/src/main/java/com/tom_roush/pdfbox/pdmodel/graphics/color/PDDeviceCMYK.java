@@ -115,6 +115,7 @@ public class PDDeviceCMYK extends PDDeviceColorSpace
     public float[] toRGB(float[] value) throws IOException
     {
         init();
+//        Log.w("ceshi",String.format("value:%f,%f,%f,%f",value[0],value[1],value[2],value[3]));
         //cmyk to lab
         if (iccUtils!=null) {
             float[] data = new float[3];
