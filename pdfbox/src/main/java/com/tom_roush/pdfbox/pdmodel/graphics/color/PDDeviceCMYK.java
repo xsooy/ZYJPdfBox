@@ -120,9 +120,10 @@ public class PDDeviceCMYK extends PDDeviceColorSpace
         if (iccUtils!=null) {
             float[] data = new float[3];
             iccUtils.applyCmyk(value,data);
-            float[] lab = toLab(data);
-            float[] xyz = labToXyz(lab);
-            return NormalColorSpace.xyzToRgb(xyz);
+//            float[] lab = toLab(data);
+//            float[] xyz = labToXyz(lab);
+//            return NormalColorSpace.xyzToRgb(xyz);
+            return data;
         }
         return new float[]{(1-value[0])*(1-value[3]),(1-value[1])*(1-value[3]),(1-value[2])*(1-value[3])};
     }

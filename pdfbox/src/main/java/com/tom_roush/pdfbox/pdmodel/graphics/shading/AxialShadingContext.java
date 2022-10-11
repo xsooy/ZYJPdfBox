@@ -221,10 +221,12 @@ public class AxialShadingContext extends ShadingContext {
                 else
                 {
                     int key = (int) (inputValue * factor);
+//                    Log.w("ceshi","key:::"+key);
                     value = colorTable[key];
                 }
                 int index = (j * w + i);
                 data[index] = value;
+                Log.w("ceshi",String.format("x:%d,y:%d,r:%d.g:%d,b:%d",x+i,y+j,value>>16&0xff,value>>8&0xff,value&0xff));
 //                int index = (j * w + i) * 4;
 //                data[index] = value & 255;
 //                value >>= 8;

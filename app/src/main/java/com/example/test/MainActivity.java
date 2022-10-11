@@ -94,14 +94,14 @@ public class MainActivity extends AppCompatActivity {
             currentPage.close();
             pdfRenderer.close();
             fileDescriptor.canDetectErrors();
-            if (!isSys) {
-                PDDocument document = PDDocument.load(new File(path));
-                YJPDFRenderer renderer = new YJPDFRenderer(document);
-                renderer.renderImage(bitmap,0);
-                String filePath = getPreviewDir()+"temp.jpg";
-                saveBitmap(bitmap,filePath);
-                document.close();
-            }
+//            if (!isSys) {
+//                PDDocument document = PDDocument.load(new File(path));
+//                YJPDFRenderer renderer = new YJPDFRenderer(document);
+//                renderer.renderImage(bitmap,0);
+//                String filePath = getPreviewDir()+"temp.jpg";
+//                saveBitmap(bitmap,filePath);
+//                document.close();
+//            }
             imageView.setImageBitmap(bitmap);
         } catch (IOException e) {
             e.printStackTrace();

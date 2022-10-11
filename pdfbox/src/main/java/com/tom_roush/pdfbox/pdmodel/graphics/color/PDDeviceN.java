@@ -341,8 +341,8 @@ public class PDDeviceN extends PDSpecialColorSpace
 
     private float[] toRGBWithAttributes(float[] value) throws IOException
     {
+        Log.w("ceshi",String.format("value:%f,  %f,  %f",value[0],value[1],value[2]));
         float[] rgbValue = new float[] { 1, 1, 1 };
-
         // look up each colorant
         for (int c = 0; c < numColorants; c++)
         {
@@ -381,6 +381,10 @@ public class PDDeviceN extends PDSpecialColorSpace
             }
 
             // convert single component to RGB
+//            float[] rgbComponent = new float[3];
+//            rgbComponent[0] = 1-componentSamples[0];
+//            rgbComponent[1] = 1-componentSamples[1];
+//            rgbComponent[2] = 1-componentSamples[2];
             float[] rgbComponent = componentColorSpace.toRGB(componentSamples);
 
             // combine the RGB component value with the RGB composite value
