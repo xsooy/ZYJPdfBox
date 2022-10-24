@@ -214,7 +214,7 @@ public final class PDICCBased extends PDCIEBasedColorSpace
             iccUtils = new IccUtils();
             PDDeviceCMYK.INSTANCE.initDone = false;
             colorType = IccUtils.getIccColorType(iccUtils.loadProfileByData(getProfileDataFromStream(input)));
-            Log.w("icc_ceshi","加载ICC");
+//            Log.w("icc_ceshi","加载ICC");
             switch (colorType) {
                 case TYPE_GRAY:
                     numberOfComponents = 1;
@@ -235,7 +235,6 @@ public final class PDICCBased extends PDCIEBasedColorSpace
                 initial[c] = Math.max(0, getRangeForComponent(c).getMin());
             }
             initialColor = new PDColor(initial, this);
-
         }
         catch (IllegalArgumentException |
                 ArrayIndexOutOfBoundsException | IOException e)

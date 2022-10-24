@@ -444,7 +444,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
         {
 //            return softMask.getImage();
             float[] matte = extractMatte(softMask);
-            Log.w("ceshi","applyMask111");
+//            Log.w("ceshi","applyMask111");
             image = applyMask(image, softMask.getOpaqueImage(), true, matte);
         }
         else
@@ -453,7 +453,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
             PDImageXObject mask = getMask();
             if (mask != null && mask.isStencil())
             {
-                Log.w("ceshi","applyMask222");
+//                Log.w("ceshi","applyMask222");
                 image = applyMask(image, mask.getOpaqueImage(), false, null);
             }
         }
@@ -577,7 +577,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
             }
         }
 
-        Log.w("ceshi","masked==="+test);
+//        Log.w("ceshi","masked==="+test);
         return masked;
     }
 

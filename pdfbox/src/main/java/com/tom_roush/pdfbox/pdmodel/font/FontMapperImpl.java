@@ -185,6 +185,7 @@ final class FontMapperImpl implements FontMapper
                 map.put(name, info);
             }
         }
+        Log.w("ceshi","createFontInfoByName===="+map.size());
         return map;
     }
 
@@ -500,6 +501,7 @@ final class FontMapperImpl implements FontMapper
     public CIDFontMapping getCIDFont(String baseFont, PDFontDescriptor fontDescriptor,
         PDCIDSystemInfo cidSystemInfo)
     {
+
         // try name match or substitute with OTF
         OpenTypeFont otf1 = (OpenTypeFont)findFont(FontFormat.OTF, baseFont);
         if (otf1 != null)
@@ -522,13 +524,13 @@ final class FontMapperImpl implements FontMapper
 
             String collection = cidSystemInfo.getRegistry() + "-" + cidSystemInfo.getOrdering();
 
-            Log.w("ceshi","cidSystemInfo.getOrdering():"+cidSystemInfo.getOrdering());
+//            Log.w("ceshi","cidSystemInfo.getOrdering():"+cidSystemInfo.getOrdering());
             if (collection.equals("Adobe-GB1") || collection.equals("Adobe-CNS1") ||
                 collection.equals("Adobe-Japan1") || collection.equals("Adobe-Korea1"))
             {
                 // try automatic substitutes via character collection
                 PriorityQueue<FontMatch> queue = getFontMatches(fontDescriptor, cidSystemInfo);
-                Log.w("ceshi","queue=="+queue.size());
+//                Log.w("ceshi","queue=="+queue.size());
                 FontMatch bestMatch = queue.poll();
 //                Log.w("ceshi","fontMatch.info::"+bestMatch.info.toString());
 //                Log.w("ceshi","fontMatch.score::"+bestMatch.score);
@@ -572,6 +574,53 @@ final class FontMapperImpl implements FontMapper
         return new CIDFontMapping(null, lastResortFont, true);
     }
 
+    @Override
+    public CIDFontMapping getCIDFontDefault(String baseFont, PDFontDescriptor fontDescriptor, PDCIDSystemInfo cidSystemInfo) {
+        OpenTypeFont otf1 = (OpenTypeFont)findFont(FontFormat.OTF, baseFont);
+        if (otf1 != null)
+        {
+            return new CIDFontMapping(otf1, null, false);
+        }
+
+        // try name match or substitute with TTF
+        TrueTypeFont ttf = (TrueTypeFont)findFont(FontFormat.TTF, baseFont);
+        if (ttf != null)
+        {
+            return new CIDFontMapping(null, ttf, false);
+        }
+        if (cidSystemInfo != null)
+        {
+            // "In Acrobat 3.0.1 and later, Type 0 fonts that use a CMap whose CIDSystemInfo
+            // dictionary defines the Adobe-GB1, Adobe-CNS1 Adobe-Japan1, or Adobe-Korea1 character
+            // collection can also be substituted." - Adobe Supplement to the ISO 32000
+
+            String collection = cidSystemInfo.getRegistry() + "-" + cidSystemInfo.getOrdering();
+
+//            Log.w("ceshi","cidSystemInfo.getOrdering():"+cidSystemInfo.getOrdering());
+            if (collection.equals("Adobe-GB1") || collection.equals("Adobe-CNS1") ||
+                    collection.equals("Adobe-Japan1") || collection.equals("Adobe-Korea1"))
+            {
+                // try automatic substitutes via character collection
+                PriorityQueue<FontMatch> queue = getFontMatches2(fontDescriptor, cidSystemInfo);
+                FontMatch bestMatch = queue.poll();
+                if (bestMatch != null)
+                {
+                    FontBoxFont font = bestMatch.info.getFont();
+                    if (font instanceof OpenTypeFont)
+                    {
+                        return new CIDFontMapping((OpenTypeFont)font, null, true);
+                    }
+                    else if (font != null)
+                    {
+                        return new CIDFontMapping(null, font, true);
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Returns a list of matching fonts, scored by suitability. Positive scores indicate matches
      * for certain attributes, while negative scores indicate mismatches. Zero scores are neutral.
@@ -586,11 +635,14 @@ final class FontMapperImpl implements FontMapper
 
         for (FontInfo info : fontInfoByName.values())
         {
+
             // filter by CIDSystemInfo, if given
             if (cidSystemInfo != null && !isCharSetMatch(cidSystemInfo, info))
             {
                 continue;
             }
+
+//            Log.w("ceshi",info.toString());
 
             FontMatch match = new FontMatch(info);
 
@@ -672,6 +724,100 @@ final class FontMapperImpl implements FontMapper
         return queue;
     }
 
+    private PriorityQueue<FontMatch> getFontMatches2(PDFontDescriptor fontDescriptor,
+                                                    PDCIDSystemInfo cidSystemInfo)
+    {
+        PriorityQueue<FontMatch> queue = new PriorityQueue<FontMatch>(20);
+
+        for (FontInfo info : fontInfoByName.values())
+        {
+
+            // filter by CIDSystemInfo, if given
+            if (cidSystemInfo != null && !isCharSetMatch2(cidSystemInfo, info))
+            {
+                continue;
+            }
+
+            FontMatch match = new FontMatch(info);
+
+            // Panose is the most reliable
+            if (fontDescriptor.getPanose() != null && info.getPanose() != null)
+            {
+                PDPanoseClassification panose = fontDescriptor.getPanose().getPanose();
+                if (panose.getFamilyKind() == info.getPanose().getFamilyKind())
+                {
+                    if (panose.getFamilyKind() == 0 &&
+                            (info.getPostScriptName().toLowerCase().contains("barcode") ||
+                                    info.getPostScriptName().startsWith("Code")) &&
+                            !probablyBarcodeFont(fontDescriptor))
+                    {
+                        // PDFBOX-4268: ignore barcode font if we aren't searching for one.
+                        continue;
+                    }
+                    // serifs
+                    if (panose.getSerifStyle() == info.getPanose().getSerifStyle())
+                    {
+                        // exact match
+                        match.score += 2;
+                    }
+                    else if (panose.getSerifStyle() >= 2 && panose.getSerifStyle() <= 5 &&
+                            info.getPanose().getSerifStyle() >= 2 &&
+                            info.getPanose().getSerifStyle() <= 5)
+                    {
+                        // cove (serif)
+                        match.score += 1;
+                    }
+                    else if (panose.getSerifStyle() >= 11 && panose.getSerifStyle() <= 13 &&
+                            info.getPanose().getSerifStyle() >= 11 &&
+                            info.getPanose().getSerifStyle() <= 13)
+                    {
+                        // sans-serif
+                        match.score += 1;
+                    }
+                    else if (panose.getSerifStyle() != 0 && info.getPanose().getSerifStyle() != 0)
+                    {
+                        // mismatch
+                        match.score -= 1;
+                    }
+
+                    // weight
+                    int weight = info.getPanose().getWeight();
+                    int weightClass = info.getWeightClassAsPanose();
+                    if (Math.abs(weight - weightClass) > 2)
+                    {
+                        // inconsistent data in system font, usWeightClass wins
+                        weight = weightClass;
+                    }
+
+                    if (panose.getWeight() == weight)
+                    {
+                        // exact match
+                        match.score += 2;
+                    }
+                    else if (panose.getWeight() > 1 && weight > 1)
+                    {
+                        float dist = Math.abs(panose.getWeight() - weight);
+                        match.score += 1 - dist * 0.5;
+                    }
+
+                    // todo: italic
+                    // ...
+                }
+            }
+            else if (fontDescriptor.getFontWeight() > 0 && info.getWeightClass() > 0)
+            {
+                // usWeightClass is pretty reliable
+                float dist = Math.abs(fontDescriptor.getFontWeight() - info.getWeightClass());
+                match.score += 1 - (dist / 100) * 0.5;
+            }
+            // todo: italic
+            // ...
+            if (match.score>0)
+                queue.add(match);
+        }
+        return queue;
+    }
+
     private boolean probablyBarcodeFont(PDFontDescriptor fontDescriptor)
     {
         String ff = fontDescriptor.getFontFamily();
@@ -694,6 +840,62 @@ final class FontMapperImpl implements FontMapper
      */
     private boolean isCharSetMatch(PDCIDSystemInfo cidSystemInfo, FontInfo info)
     {
+//        if (info.getCIDSystemInfo() != null)
+//        {
+//            return info.getCIDSystemInfo().getRegistry().equals(cidSystemInfo.getRegistry()) &&
+//                info.getCIDSystemInfo().getOrdering().equals(cidSystemInfo.getOrdering());
+//        }
+//        else
+        {
+//            Log.w("ceshi",cidSystemInfo.getOrdering()+"===="+cidSystemInfo.getRegistry());
+//            Log.w("ceshi",info.getClass().getSimpleName());
+//            if (!info.getPostScriptName().contains("-Regular"))
+//                return false;
+            long codePageRange = info.getCodePageRange();
+
+            long JIS_JAPAN = 1 << 17;
+            long CHINESE_SIMPLIFIED = 1 << 18;
+            long KOREAN_WANSUNG = 1 << 19;
+            long CHINESE_TRADITIONAL = 1 << 20;
+            long KOREAN_JOHAB = 1 << 21;
+
+//            Log.w("ceshi","codePageRange===="+codePageRange);
+
+            if ("MalgunGothic-Semilight".equals(info.getPostScriptName()))
+            {
+                // PDFBOX-4793 and PDF.js 10699: This font has only Korean, but has bits 17-21 set.
+                codePageRange &= ~(JIS_JAPAN | CHINESE_SIMPLIFIED | CHINESE_TRADITIONAL);
+            }
+            if (cidSystemInfo.getOrdering().equals("GB1") &&
+                (codePageRange & CHINESE_SIMPLIFIED) == CHINESE_SIMPLIFIED)
+            {
+//                Log.w("ceshi","中文11");
+                return true;
+            }
+            else if (cidSystemInfo.getOrdering().equals("CNS1") &&
+                (codePageRange & CHINESE_TRADITIONAL) == CHINESE_TRADITIONAL)
+            {
+//                Log.w("ceshi","中文22");
+                return true;
+            }
+            else if (cidSystemInfo.getOrdering().equals("Japan1") &&
+                (codePageRange & JIS_JAPAN) == JIS_JAPAN)
+            {
+//                Log.w("ceshi","日文11");
+                return true;
+            }
+            else
+            {
+//                Log.w("ceshi","韩文11");
+                return cidSystemInfo.getOrdering().equals("Korea1") &&
+                    (codePageRange & KOREAN_WANSUNG) == KOREAN_WANSUNG ||
+                    (codePageRange & KOREAN_JOHAB) == KOREAN_JOHAB;
+            }
+        }
+    }
+
+    private boolean isCharSetMatch2(PDCIDSystemInfo cidSystemInfo, FontInfo info)
+    {
         if (info.getCIDSystemInfo() != null)
         {
             return info.getCIDSystemInfo().getRegistry().equals(cidSystemInfo.getRegistry()) &&
@@ -715,25 +917,25 @@ final class FontMapperImpl implements FontMapper
                 codePageRange &= ~(JIS_JAPAN | CHINESE_SIMPLIFIED | CHINESE_TRADITIONAL);
             }
             if (cidSystemInfo.getOrdering().equals("GB1") &&
-                (codePageRange & CHINESE_SIMPLIFIED) == CHINESE_SIMPLIFIED)
+                    (codePageRange & CHINESE_SIMPLIFIED) == CHINESE_SIMPLIFIED)
             {
                 return true;
             }
             else if (cidSystemInfo.getOrdering().equals("CNS1") &&
-                (codePageRange & CHINESE_TRADITIONAL) == CHINESE_TRADITIONAL)
+                    (codePageRange & CHINESE_TRADITIONAL) == CHINESE_TRADITIONAL)
             {
                 return true;
             }
             else if (cidSystemInfo.getOrdering().equals("Japan1") &&
-                (codePageRange & JIS_JAPAN) == JIS_JAPAN)
+                    (codePageRange & JIS_JAPAN) == JIS_JAPAN)
             {
                 return true;
             }
             else
             {
                 return cidSystemInfo.getOrdering().equals("Korea1") &&
-                    (codePageRange & KOREAN_WANSUNG) == KOREAN_WANSUNG ||
-                    (codePageRange & KOREAN_JOHAB) == KOREAN_JOHAB;
+                        (codePageRange & KOREAN_WANSUNG) == KOREAN_WANSUNG ||
+                        (codePageRange & KOREAN_JOHAB) == KOREAN_JOHAB;
             }
         }
     }

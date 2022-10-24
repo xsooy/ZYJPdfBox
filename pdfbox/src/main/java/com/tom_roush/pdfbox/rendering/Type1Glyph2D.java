@@ -54,6 +54,8 @@ final class Type1Glyph2D implements Glyph2D
             try
             {
                 String name = font.getEncoding().getName(code);
+
+                Log.w("ceshi","name==="+name);
                 if (!font.hasGlyph(name))
                 {
                     Log.w("PdfBox-Android", "No glyph for code " + code + " (" + name + ") in font " + font.getName());

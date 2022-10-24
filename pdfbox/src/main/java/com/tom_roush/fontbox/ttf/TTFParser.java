@@ -144,6 +144,7 @@ public class TTFParser
             // skip tables with zero length
             if (table != null)
             {
+//                Log.w("ceshi","addTable==="+table.getTag());
                 font.addTable(table);
             }
         }
@@ -173,7 +174,7 @@ public class TTFParser
         {
             if (!table.getInitialized())
             {
-//                Log.w("ceshi","测试条件11"+font.getName());
+                Log.w("ceshi","测试条件11==="+font.getName());
                 font.readTable(table);
             }
         }

@@ -15,6 +15,8 @@
  */
 package com.tom_roush.fontbox.ttf;
 
+import android.util.Log;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -127,6 +129,7 @@ public class BufferedRandomAccessFile extends RandomAccessFile
             bufend = n;
             bufpos = 0;
         }
+//        Log.w("ceshi","fillBuffer"+n);
         return n;
     }
 

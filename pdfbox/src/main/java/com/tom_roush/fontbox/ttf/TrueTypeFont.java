@@ -140,9 +140,14 @@ public class TrueTypeFont implements FontBoxFont, Closeable
     protected synchronized TTFTable getTable(String tag) throws IOException
     {
         TTFTable ttfTable = tables.get(tag);
+//        for (String key:tables.keySet()) {
+//            Log.w("ceshi","我的key==="+key);
+//        }
+        if (ttfTable!=null && tag.equals("cmap"))
+            Log.w("ceshi","cmap==="+ttfTable.getInitialized());
         if (ttfTable != null && !ttfTable.getInitialized())
         {
-//            Log.w("ceshi","测试条件22"+tag);
+            Log.w("ceshi","测试条件22"+tag);
             readTable(ttfTable);
         }
         return ttfTable;
@@ -255,6 +260,7 @@ public class TrueTypeFont implements FontBoxFont, Closeable
      */
     public CmapTable getCmap() throws IOException
     {
+
         return (CmapTable) getTable(CmapTable.TAG);
     }
 
@@ -353,8 +359,10 @@ public class TrueTypeFont implements FontBoxFont, Closeable
         {
             // save current position
             long currentPosition = data.getCurrentPosition();
+            Log.w("ceshi","currentPosition===="+currentPosition+"，，"+this.hashCode());
             data.seek(table.getOffset());
             table.read(this, data);
+            Log.w("ceshi","读取结束===="+currentPosition);
             // restore current position
             data.seek(currentPosition);
         }
@@ -534,6 +542,7 @@ public class TrueTypeFont implements FontBoxFont, Closeable
      */
     public CmapLookup getUnicodeCmapLookup(boolean isStrict) throws IOException
     {
+        Log.w("ceshi","getUnicodeCmapLookup");
         CmapSubtable cmap = getUnicodeCmapImpl(isStrict);
         if (!enabledGsubFeatures.isEmpty())
         {
@@ -563,7 +572,8 @@ public class TrueTypeFont implements FontBoxFont, Closeable
         }
 
         CmapSubtable cmap = cmapTable.getSubtable(CmapTable.PLATFORM_UNICODE,
-            CmapTable.ENCODING_UNICODE_2_0_FULL);
+                CmapTable.ENCODING_UNICODE_2_0_FULL);
+
         if (cmap == null)
         {
             cmap = cmapTable.getSubtable(CmapTable.PLATFORM_WINDOWS,

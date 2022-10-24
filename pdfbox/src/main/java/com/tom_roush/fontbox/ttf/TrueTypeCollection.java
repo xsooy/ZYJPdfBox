@@ -80,7 +80,7 @@ public class TrueTypeCollection implements Closeable
         for (int i = 0; i < numFonts; i++)
         {
             fontOffsets[i] = stream.readUnsignedInt();
-            Log.w("ceshi","fontOffsets[i]=="+fontOffsets[i]);
+//            Log.w("ceshi","fontOffsets[i]=="+fontOffsets[i]);
         }
         if (version >= 2)
         {
@@ -119,7 +119,7 @@ public class TrueTypeCollection implements Closeable
             parser = new TTFParser(false, true);
         }
         stream.seek(fontOffsets[idx]);
-        Log.w("ceshi","getFontAtIndex==="+idx);
+        Log.w("ceshi","getFontAtIndex==="+fontOffsets[idx]);
         return parser.parse(new TTCDataStream(stream));
     }
 

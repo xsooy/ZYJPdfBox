@@ -756,7 +756,7 @@ final class Type1Parser
             // RD
             read(Token.INTEGER);
             Token charstring = read(Token.CHARSTRING);
-            Log.w("ceshi","charstrings::"+name);
+//            Log.w("ceshi","charstrings::"+name);
             font.charstrings.put(name, decrypt(charstring.getData(), CHARSTRING_KEY, lenIV));
             readDef();
         }

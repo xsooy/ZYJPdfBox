@@ -516,7 +516,7 @@ public class CFFParser
         font.setCharset(charset);
 
         // charstrings dict
-        Log.w("ceshi","charStrings::"+charStringsIndex.length);
+//        Log.w("ceshi","charStrings::"+charStringsIndex.length);
         font.charStrings = charStringsIndex;
 
         // format-specific dictionaries
@@ -1104,8 +1104,8 @@ public class CFFParser
     private Format2Charset readFormat2Charset(CFFDataInput dataInput, int format, int nGlyphs,
         boolean isCIDFont) throws IOException
     {
-        Log.w("ceshi","format=="+format);
-        Log.w("ceshi","nGlyphs=="+nGlyphs);
+//        Log.w("ceshi","format=="+format);
+//        Log.w("ceshi","nGlyphs=="+nGlyphs);
         Format2Charset charset = new Format2Charset(isCIDFont);
         charset.format = format;
         if (isCIDFont)
@@ -1122,8 +1122,8 @@ public class CFFParser
         {
             int first = dataInput.readSID();
             int nLeft = dataInput.readCard16();
-            Log.w("ceshi","first"+first);
-            Log.w("ceshi","nLeft"+nLeft);
+//            Log.w("ceshi","first"+first);
+//            Log.w("ceshi","nLeft"+nLeft);
             if (!isCIDFont)
             {
                 for (int j = 0; j < 1 + nLeft; j++)
@@ -1476,16 +1476,16 @@ public class CFFParser
         @Override
         public int getGIDForCID(int cid)
         {
-            Log.w("ceshi","getGIDForCID111232");
+//            Log.w("ceshi","getGIDForCID111232");
             for (RangeMapping mapping : rangesCID2GID)
             {
                 if (mapping.isInReverseRange(cid))
                 {
-                    Log.w("ceshi","getGIDForCID111");
+//                    Log.w("ceshi","getGIDForCID111");
                     return mapping.mapReverseValue(cid);
                 }
             }
-            Log.w("ceshi","getGIDForCID222");
+//            Log.w("ceshi","getGIDForCID222");
             return super.getGIDForCID(cid);
         }
 

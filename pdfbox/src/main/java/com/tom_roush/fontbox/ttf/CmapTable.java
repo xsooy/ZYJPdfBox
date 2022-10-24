@@ -16,6 +16,8 @@
  */
 package com.tom_roush.fontbox.ttf;
 
+import android.util.Log;
+
 import java.io.IOException;
 
 /**
@@ -81,8 +83,10 @@ public class CmapTable extends TTFTable
             cmap.initData(data);
             cmaps[i] = cmap;
         }
+//        Log.w("ceshi","ttf.hasCode"+ttf.hashCode());
         for (int i = 0; i < numberOfTables; i++)
         {
+            Log.w("ceshi","ttf.hasCode"+ttf.hashCode());
             cmaps[i].initSubtable(this, ttf.getNumberOfGlyphs(), data);
         }
         initialized = true;

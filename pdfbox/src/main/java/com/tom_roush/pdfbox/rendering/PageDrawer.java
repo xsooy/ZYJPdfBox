@@ -381,7 +381,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     protected void showFontGlyph(Matrix textRenderingMatrix, PDFont font, int code, String unicode,
         Vector displacement) throws IOException
     {
-//        Log.w("icc_ceshi","unicode:"+unicode);
+//        Log.w("icc_ceshi","unicode:"+unicode+",,,,,"+code);
         AffineTransform at = textRenderingMatrix.createAffineTransform();
         at.concatenate(font.getFontMatrix().createAffineTransform());
 
@@ -405,6 +405,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     {
         PDGraphicsState state = getGraphicsState();
         RenderingMode renderingMode = state.getTextState().getRenderingMode();
+
 
         Path path = glyph2D.getPathForCharacterCode(code);
         if (path != null)
@@ -699,13 +700,16 @@ public class PageDrawer extends PDFGraphicsStreamEngine
                 PDShading shading = shadingPattern.getShading();
                 //轴向
                 if (shading instanceof PDShadingType2) {
-                    getGraphicsState().intersectClippingPath(linePath);
+//                    getGraphicsState().intersectClippingPath(linePath);
+                    canvas.clipPath(linePath, Region.Op.INTERSECT);
                     canvas.scale(1/scale,1/scale);
                     Rect rect = new Rect((int)(bounds.left*scale),(int)(bounds.top*scale),(int)(bounds.right*scale),(int)(bounds.bottom*scale));
                     Rect rect2 = new Rect((int)(bounds.left*scale),(int)(canvas.getHeight()-(bounds.bottom*scale)),(int)(bounds.right*scale),(int)(canvas.getHeight()-(bounds.top*scale)));
-
-                    setClip();
+//                    paint.setStrokeWidth(2f);
+//                    setClip();
+                    Matrix ctm = getGraphicsState().getCurrentTransformationMatrix();
                     AxialShadingContext axialShadingContext = new AxialShadingContext((PDShadingType2) shading,rect2);
+                    axialShadingContext.setTransform(ctm,new AffineTransform(4.166666507720948,0.0, 0.0, -4.166666507720948, 0.0, 3507.874927220342));
                     for (int y=rect.bottom;y>rect.top;y--) {
                         int[] data = axialShadingContext.getRaster(rect.left,canvas.getHeight()-y,rect.right-rect.left,1);
                         for (int i=0;i<data.length;i++) {
@@ -1064,33 +1068,17 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         {
             if (shading instanceof PDShadingType2) {
                 canvas.save();
-//                canvas.restore();
-//                getGraphicsState().intersectClippingPath(linePath);
                 Path path = getGraphicsState().getCurrentClippingPath();
-//                getGraphicsState().intersectClippingPath(path);
                 RectF bounds = new RectF();
                 path.computeBounds(bounds,true);
                 canvas.scale(1/scale,1/scale);
-//                Log.w("ceshi","bounds==="+bounds);
                 Rect rect = new Rect((int)(bounds.left*scale+0.5f),(int)(bounds.top*scale+0.5f),(int)(bounds.right*scale+0.5f),(int)(bounds.bottom*scale+0.5f));
                 Rect rect2 = new Rect((int)(bounds.left*scale+0.5f),(int)(canvas.getHeight()-(bounds.bottom*scale)+0.5f),(int)(bounds.right*scale+0.5f),(int)(canvas.getHeight()-(bounds.top*scale+0.5f)));
 
-//                paint.setColor(Color.GREEN);
-//                canvas.drawRect(rect,paint);
-//                COSArray array = ((PDShadingType2) shading).getCoords();
-//                for (COSBase base:array){
-//                    Log.w("ceshi","rect===="+base);
-//                }
-//                Log.w("ceshi","rect===="+((PDShadingType2) shading).getCoords().get(0));
-//                Log.w("ceshi","rect===="+((PDShadingType2) shading).getCoords().get(1));
-//                Log.w("ceshi","rect2===="+rect2);
-//                setClip();
                 android.graphics.Matrix matrix = new android.graphics.Matrix();
                 matrix.setScale(scale,scale);
                 path.transform(matrix);
-//                RectF bounds = new RectF();
                 path.computeBounds(bounds,true);
-//                Log.w("ceshi","bounds==="+bounds);
                 canvas.clipPath(path, Region.Op.INTERSECT);
 
                 AxialShadingContext axialShadingContext = new AxialShadingContext((PDShadingType2) shading,rect2);
@@ -1100,7 +1088,6 @@ public class PageDrawer extends PDFGraphicsStreamEngine
                     paint.setStrokeWidth(2f);
                     for (int i=0;i<data.length;i++) {
                         paint.setColor(data[i]|0xff000000);
-//                        Log.w("ceshi",String.format("ShadingFill---x:%d,y:%d,r:%d.g:%d,b:%d",rect.left+i,y,data[i]>>16&0xff,data[i]>>8&0xff,data[i]&0xff));
                         canvas.drawPoint(rect.left+i,y,paint);
                     }
                 }

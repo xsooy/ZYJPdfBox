@@ -726,6 +726,7 @@ public abstract class PDFStreamEngine
 
 //            Log.w("ceshi","code::"+code);
             int codeLength = before - in.available();
+//            Log.w("ceshi","font.toUnicode==="+font.getClass().getSimpleName());
             String unicode = font.toUnicode(code);
 
             // Word spacing shall be applied to every occurrence of the single-byte character code

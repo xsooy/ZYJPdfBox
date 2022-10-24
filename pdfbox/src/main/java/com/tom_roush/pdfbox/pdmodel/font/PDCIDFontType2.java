@@ -24,6 +24,7 @@ import java.io.IOException;
 import com.tom_roush.fontbox.cff.Type2CharString;
 import com.tom_roush.fontbox.cmap.CMap;
 import com.tom_roush.fontbox.ttf.CmapLookup;
+import com.tom_roush.fontbox.ttf.CmapSubtable;
 import com.tom_roush.fontbox.ttf.GlyphData;
 import com.tom_roush.fontbox.ttf.OTFParser;
 import com.tom_roush.fontbox.ttf.OpenTypeFont;
@@ -141,6 +142,7 @@ public class PDCIDFontType2 extends PDCIDFont
             }
             ttf = ttfFont;
         }
+        Log.w("ceshi","ttf===="+ttf.getClass().getSimpleName());
         cmap = ttf.getUnicodeCmapLookup(false);
         cid2gid = readCIDToGIDMap();
     }
@@ -263,6 +265,10 @@ public class PDCIDFontType2 extends PDCIDFont
                 // a non-embedded font always has a cmap (otherwise FontMapper won't load it)
 //                Log.w("ceshi","unicode.codePointAt(0)==="+unicode.codePointAt(0));
 //                Log.w("ceshi","cmap.getGlyphId=="+cmap.getGlyphId(unicode.codePointAt(0)));
+//                if (cmap instanceof CmapSubtable) {
+//                    Log.w("ceshi","cmap=="+((CmapSubtable) cmap).subtableFormat);
+//                }
+
                 return cmap.getGlyphId(unicode.codePointAt(0));
             }
         }
@@ -274,6 +280,7 @@ public class PDCIDFontType2 extends PDCIDFont
             int cid = codeToCID(code);
             if (cid2gid != null)
             {
+//                Log.w("ceshi","codeToGID1111==="+cid2gid.length);
                 // use CIDToGIDMap
                 if (cid < cid2gid.length)
                 {
@@ -286,6 +293,7 @@ public class PDCIDFontType2 extends PDCIDFont
             }
             else
             {
+//                Log.w("ceshi","codeToGID2222"+ttf.getNumberOfGlyphs());
                 // "Identity" is the default CIDToGIDMap
                 if (cid < ttf.getNumberOfGlyphs())
                 {
@@ -396,12 +404,15 @@ public class PDCIDFontType2 extends PDCIDFont
         {
             // we're not supposed to have CFF fonts inside PDCIDFontType2, but if we do,
             // then we treat their CIDs as GIDs, see PDFBOX-3344
+            //do this
+//            Log.w("ceshi","1111getPath()"+code);
             int cid = codeToGID(code);
             Type2CharString charstring = ((OpenTypeFont)ttf).getCFF().getFont().getType2CharString(cid);
             return charstring.getPath();
         }
         else
         {
+//            Log.w("ceshi","2222getPath()"+code);
             int gid = codeToGID(code);
             GlyphData glyph = ttf.getGlyph().getGlyph(gid);
             if (glyph != null)

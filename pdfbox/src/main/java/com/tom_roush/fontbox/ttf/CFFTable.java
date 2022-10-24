@@ -53,7 +53,6 @@ public class CFFTable extends TTFTable
         byte[] bytes = data.read((int)getLength());
 
         CFFParser parser = new CFFParser();
-        Log.w("ceshi","CFFParser111");
         cffFont = parser.parse(bytes, new ByteSource(font)).get(0);
 
         initialized = true;

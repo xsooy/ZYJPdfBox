@@ -51,4 +51,8 @@ public interface FontMapper
      */
     CIDFontMapping getCIDFont(String baseFont, PDFontDescriptor fontDescriptor,
         PDCIDSystemInfo cidSystemInfo);
+
+    CIDFontMapping getCIDFontDefault(String baseFont, PDFontDescriptor fontDescriptor, PDCIDSystemInfo cidSystemInfo);
+
+
 }

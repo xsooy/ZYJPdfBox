@@ -108,16 +108,34 @@ public final class PDFontFactory
         throws IOException
     {
         COSName type = dictionary.getCOSName(COSName.TYPE, COSName.FONT);
+
         if (!COSName.FONT.equals(type))
         {
             throw new IllegalArgumentException("Expected 'Font' dictionary but found '" + type.getName() + "'");
         }
 
         COSName subType = dictionary.getCOSName(COSName.SUBTYPE);
+
         if (COSName.CID_FONT_TYPE0.equals(subType))
         {
-//            Log.w("ceshi","PDCIDFontType0==");
+            COSBase base = dictionary.getDictionaryObject(COSName.CIDSYSTEMINFO);
+            if (base instanceof COSDictionary)
+            {
+                PDCIDSystemInfo cidSystemInfo = new PDCIDSystemInfo((COSDictionary) base);
+                String collection = cidSystemInfo.getRegistry() + "-" + cidSystemInfo.getOrdering();
+                if (collection.equals("Adobe-GB1") || collection.equals("Adobe-CNS1") ||
+                        collection.equals("Adobe-Japan1") || collection.equals("Adobe-Korea1"))
+                {
+                    COSDictionary fd = (COSDictionary) dictionary.getDictionaryObject(COSName.FONT_DESC);
+                    if (FontMappers.instance().getCIDFontDefault(dictionary.getNameAsString(COSName.BASE_FONT), new PDFontDescriptor(fd), cidSystemInfo)==null) {
+                        Log.w("ceshi","没有匹配的字体文件");
+                        return new PDCIDFontType2(dictionary, parent);
+                    }
+                }
+            }
             return new PDCIDFontType0(dictionary, parent);
+            //TODO: 若是找不到对应字体，使用CJK字体时，PDCIDFontType0不会解析cmap，无法做字体对应，导致显示字体异常
+//            return new PDCIDFontType2(dictionary, parent);
         }
         else if (COSName.CID_FONT_TYPE2.equals(subType))
         {

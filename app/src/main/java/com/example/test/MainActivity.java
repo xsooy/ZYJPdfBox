@@ -18,11 +18,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.documentfile.provider.DocumentFile;
 
 import com.blankj.utilcode.util.ToastUtils;
+import com.bumptech.glide.Glide;
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPageTree;
 import com.tom_roush.pdfbox.pdmodel.encryption.InvalidPasswordException;
 import com.tom_roush.pdfbox.rendering.PDFRenderer;
+
 import com.xsooy.icc.IccUtils;
 
 import java.io.File;
@@ -95,14 +97,15 @@ public class MainActivity extends AppCompatActivity {
             pdfRenderer.close();
             fileDescriptor.canDetectErrors();
 //            if (!isSys) {
-//                PDDocument document = PDDocument.load(new File(path));
-//                YJPDFRenderer renderer = new YJPDFRenderer(document);
-//                renderer.renderImage(bitmap,0);
-//                String filePath = getPreviewDir()+"temp.jpg";
-//                saveBitmap(bitmap,filePath);
-//                document.close();
+                PDDocument document = PDDocument.load(new File(path));
+                YJPDFRenderer renderer = new YJPDFRenderer(document);
+                renderer.renderImage(bitmap,0);
+                String filePath = getPreviewDir()+"temp.jpg";
+                saveBitmap(bitmap,filePath);
+                document.close();
 //            }
-            imageView.setImageBitmap(bitmap);
+            Glide.with(this).load(bitmap).into(imageView);
+//            imageView.setImageBitmap(bitmap);
         } catch (IOException e) {
             e.printStackTrace();
         }catch (SecurityException e) {
@@ -128,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
                     paint.setColor(Color.WHITE);
                     paint.setStyle(Paint.Style.FILL);
                     PDFRenderer renderer = new PDFRenderer(document);
-                    Bitmap bitmap = renderer.renderImageWithDPI(1, 300);
+                    Bitmap bitmap = renderer.renderImageWithDPI(0, 300);
                     String filePath = getPreviewDir()+"1.jpg";
                     saveBitmap(bitmap,filePath);
                     imageView.post(()->{

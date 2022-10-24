@@ -189,6 +189,8 @@ public class PDType0Font extends PDFont implements PDVectorFont
             throw new IOException("Missing descendant font dictionary");
         }
         descendantFont = PDFontFactory.createDescendantFont((COSDictionary) descendantFontDictBase, this);
+
+        Log.w("ceshi","descendantFont==="+descendantFont.getClass().getSimpleName());
         readEncoding();
         fetchCMapUCS2();
     }
@@ -341,8 +343,10 @@ public class PDType0Font extends PDFont implements PDVectorFont
             // try to find the corresponding Unicode (UC2) CMap
             if (strName != null)
             {
+                Log.w("ceshi","strName==="+strName);
                 CMap prdCMap = CMapManager.getPredefinedCMap(strName);
                 String ucs2Name = prdCMap.getRegistry() + "-" + prdCMap.getOrdering() + "-UCS2";
+                Log.w("ceshi","ucs2Name==="+ucs2Name);
                 cMapUCS2 = CMapManager.getPredefinedCMap(ucs2Name);
             }
         }
@@ -484,7 +488,9 @@ public class PDType0Font extends PDFont implements PDVectorFont
             // a) Map the character code to a character identifier (CID) according to the font?s CMap
             int cid = codeToCID(code);
 
+//            Log.w("ceshi","2222toUnicode==="+codeToCID(code));
             // e) Map the CID according to the CMap from step d), producing a Unicode value
+
             return cMapUCS2.toUnicode(cid);
         }
         else
@@ -569,6 +575,7 @@ public class PDType0Font extends PDFont implements PDVectorFont
     @Override
     public Path getPath(int code) throws IOException
     {
+
         return descendantFont.getPath(code);
     }
 

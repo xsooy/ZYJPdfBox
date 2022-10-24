@@ -228,6 +228,23 @@ final class FileSystemFontProvider extends FontProvider
                 addTrueTypeFont(new File("/system/fonts/DroidSans.ttf"));
                 addTrueTypeFont(new File("/system/fonts/DroidSans-Bold.ttf"));
                 addTrueTypeFont(new File("/system/fonts/DroidSansMono.ttf"));
+                FontFileFinder fontFileFinder = new FontFileFinder();
+                List<URI> fonts = fontFileFinder.find();
+                for (URI font : fonts)
+                {
+                    if (font.getPath().contains("NotoSansCJK")&&font.getPath().contains("Regular")) {
+                        File file = new File(font);
+                        if (file.getName().endsWith(".ttf")) {
+                            addTrueTypeFont(file);
+                        } else  if (file.getName().endsWith(".otf")) {
+                            addTrueTypeFont(file);
+                        }  else if (file.getName().endsWith(".ttc")) {
+                            addTrueTypeCollection(file);
+                        } else if (file.getName().endsWith(".otc")) {
+                            addTrueTypeCollection(file);
+                        }
+                    }
+                }
 //                File fontDir = new File("/system/fonts/");
 //                if (fontDir.exists()&& fontDir.isDirectory()) {
 //                    SortedSet<File> sortedSet = new TreeSet(new Comparator<File>() {
@@ -273,7 +290,12 @@ final class FileSystemFontProvider extends FontProvider
             for (URI font : fonts)
             {
 //                Log.w("font_ceshi","文件路径22："+new File(font).getAbsolutePath());
-                files.add(new File(font));
+                if (font.getPath().contains("NotoSansCJK")&&font.getPath().contains("Regular")) {
+                    files.add(new File(font));
+                    Log.w("ceshi","font.getPath"+font.getPath());
+                }
+//                if (new File(font).getName().contains("NotoSans"))
+
             }
 
             if (PDFBoxConfig.isDebugEnabled())
@@ -282,10 +304,12 @@ final class FileSystemFontProvider extends FontProvider
             }
 
             // load cached FontInfo objects
-            List<FSFontInfo> cachedInfos = loadDiskCache(files);
+            List<FSFontInfo> cachedInfos = new ArrayList<>();
+//            List<FSFontInfo> cachedInfos = loadDiskCache(files);
             if (cachedInfos != null && cachedInfos.size() > 0)
             {
                 fontInfoList.addAll(cachedInfos);
+                Log.w("ceshi","fontInfoList=="+fontInfoList.size());
             }
             else
             {
@@ -312,7 +336,6 @@ final class FileSystemFontProvider extends FontProvider
                 if (file.getPath().toLowerCase().endsWith(".ttf") ||
                     file.getPath().toLowerCase().endsWith(".otf"))
                 {
-
                     addTrueTypeFont(file);
                 }
                 else if (file.getPath().toLowerCase().endsWith(".ttc") ||
@@ -432,7 +455,7 @@ final class FileSystemFontProvider extends FontProvider
      */
     private List<FSFontInfo> loadDiskCache(List<File> files)
     {
-        Log.w("font_ceshi","loadDiskCache");
+        Log.w("font_ceshi","loadDiskCache=="+files.size());
         Set<String> pending = new HashSet<String>();
         for (File file : files)
         {
@@ -447,6 +470,7 @@ final class FileSystemFontProvider extends FontProvider
         try
         {
             file = getDiskCacheFile();
+            Log.w("ceshi","getDiskCacheFile=="+getDiskCacheFile());
             fileExists = file.exists();
         }
         catch (SecurityException e)
@@ -514,7 +538,7 @@ final class FileSystemFontProvider extends FontProvider
                     fontFile = new File(parts[9]);
                     if (fontFile.exists())
                     {
-//                        Log.w("font_ceshi11",fontFile.getName()+"-----postScriptName==="+postScriptName);
+                        Log.w("font_ceshi11",fontFile.getName()+"-----postScriptName==="+postScriptName);
                         FSFontInfo info = new FSFontInfo(fontFile, format, postScriptName,
                             cidSystemInfo, usWeightClass, sFamilyClass, ulCodePageRange1,
                             ulCodePageRange2, macStyle, panose, this);
@@ -589,6 +613,7 @@ final class FileSystemFontProvider extends FontProvider
      */
     private void addTrueTypeFont(File ttfFile) throws IOException
     {
+        Log.w("ceshi","addTrueTypeFont=="+ttfFile.getPath());
         try
         {
             if (ttfFile.getPath().endsWith(".otf"))
@@ -619,6 +644,7 @@ final class FileSystemFontProvider extends FontProvider
      */
     private void addTrueTypeFontImpl(TrueTypeFont ttf, File file) throws IOException
     {
+        Log.w("ceshi","ttf==="+ttf.getName()+",file==="+file.getPath());
         try
         {
             // read PostScript name, if any
@@ -666,6 +692,7 @@ final class FileSystemFontProvider extends FontProvider
                         int supplement = cidFont.getSupplement();
                         ros = new CIDSystemInfo(registry, ordering, supplement);
                     }
+                    Log.w("ceshi","addOTF===="+ttf.getName());
                     fontInfoList.add(new FSFontInfo(file, FontFormat.OTF, ttf.getName(), ros,
                         usWeightClass, sFamilyClass, ulCodePageRange1, ulCodePageRange2,
                         macStyle, panose, this));
@@ -686,6 +713,7 @@ final class FileSystemFontProvider extends FontProvider
                     }
 
                     format = "TTF";
+                    Log.w("ceshi","addTTF===="+ttf.getName());
                     fontInfoList.add(new FSFontInfo(file, FontFormat.TTF, ttf.getName(), ros,
                         usWeightClass, sFamilyClass, ulCodePageRange1, ulCodePageRange2,
                         macStyle, panose, this));
@@ -724,6 +752,7 @@ final class FileSystemFontProvider extends FontProvider
      */
     private void addType1Font(File pfbFile) throws IOException
     {
+        Log.w("ceshi","addType1Font===="+pfbFile.getPath());
         InputStream input = new FileInputStream(pfbFile);
         try
         {

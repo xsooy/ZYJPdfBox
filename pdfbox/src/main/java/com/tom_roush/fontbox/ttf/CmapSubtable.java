@@ -57,6 +57,8 @@ public class CmapSubtable implements CmapLookup
         subTableOffset = data.readUnsignedInt();
     }
 
+    public int subtableFormat = 0;
+
     /**
      * This will read the required data from the stream.
      *
@@ -69,6 +71,7 @@ public class CmapSubtable implements CmapLookup
     {
         data.seek(cmap.getOffset() + subTableOffset);
         int subtableFormat = data.readUnsignedShort();
+        this.subtableFormat = subtableFormat;
         long length;
         long version;
         if (subtableFormat < 8)
@@ -83,7 +86,7 @@ public class CmapSubtable implements CmapLookup
             length = data.readUnsignedInt();
             version = data.readUnsignedInt();
         }
-
+        Log.w("ceshi","initSubtable=="+subtableFormat+",,,"+cmap.hashCode());
         switch (subtableFormat)
         {
             case 0:

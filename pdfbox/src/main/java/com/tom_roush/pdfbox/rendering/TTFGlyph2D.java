@@ -97,10 +97,12 @@ final class TTFGlyph2D implements Glyph2D
     {
         if (isCIDFont)
         {
+//            Log.w("ceshi","((PDType0Font)font).codeToGID");
             return ((PDType0Font)font).codeToGID(code);
         }
         else
         {
+//            Log.w("ceshi","((PDTrueTypeFont)font).codeToGID");
             return ((PDTrueTypeFont)font).codeToGID(code);
         }
     }
@@ -125,6 +127,7 @@ final class TTFGlyph2D implements Glyph2D
         Path glyphPath = glyphs.get(gid);
         if (glyphPath == null)
         {
+//            Log.w("ceshi","gid=="+gid+",,,,,"+ttf.getMaximumProfile().getNumGlyphs());
             if (gid == 0 || gid >= ttf.getMaximumProfile().getNumGlyphs())
             {
                 if (isCIDFont)

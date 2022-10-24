@@ -31,7 +31,8 @@ class RAFDataStream extends TTFDataStream
 {
     private RandomAccessFile raf = null;
     private File ttfFile = null;
-    private static final int BUFFERSIZE = 16384;
+    //TODO:ceshi  增加10倍
+    private static final int BUFFERSIZE = 163840;
 
     /**
      * Constructor.
