@@ -142,7 +142,6 @@ public class PDCIDFontType2 extends PDCIDFont
             }
             ttf = ttfFont;
         }
-        Log.w("ceshi","ttf===="+ttf.getClass().getSimpleName());
         cmap = ttf.getUnicodeCmapLookup(false);
         cid2gid = readCIDToGIDMap();
     }

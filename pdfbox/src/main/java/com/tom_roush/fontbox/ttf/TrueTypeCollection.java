@@ -119,7 +119,6 @@ public class TrueTypeCollection implements Closeable
             parser = new TTFParser(false, true);
         }
         stream.seek(fontOffsets[idx]);
-        Log.w("ceshi","getFontAtIndex==="+fontOffsets[idx]);
         return parser.parse(new TTCDataStream(stream));
     }
 

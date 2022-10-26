@@ -102,7 +102,7 @@ public abstract class PDColorSpace implements COSObjectable
         else if (colorSpace instanceof COSName)
         {
             COSName name = (COSName)colorSpace;
-//            Log.w("ceshi","name==="+name);
+            Log.w("ceshi","name==="+name);
             // default color spaces
             if (resources != null)
             {

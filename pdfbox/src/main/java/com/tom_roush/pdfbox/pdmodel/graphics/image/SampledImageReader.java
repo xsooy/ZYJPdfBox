@@ -218,11 +218,12 @@ final class SampledImageReader
             final float[] defaultDecode = pdImage.getColorSpace().getDefaultDecode(8);
             if (pdImage.getSuffix() != null && subsampling == 1)
             {
+                Log.w("ceshi","pdImage.getSuffix()==="+pdImage.getSuffix());
                 if (pdImage.getSuffix().equals("jpg")) {
                     if (pdImage.getColorSpace() instanceof PDDeviceCMYK) {
                         InputStream inputStream = pdImage.createInputStream();
                         byte[] buff = new byte[inputStream.available()];
-                        Log.w("ceshi","buff.length=="+buff.length);
+//                        Log.w("ceshi","buff.length=="+buff.length);
                         IOUtils.populateBuffer(inputStream,buff);
                         return ((PDDeviceCMYK)pdImage.getColorSpace()).toRGBImage(new JpegUtils().converData(buff),width,height);
                     }
@@ -247,7 +248,7 @@ final class SampledImageReader
                 }
             }
 
-            else if (bitsPerComponent == 8 && Arrays.equals(decode, defaultDecode) &&
+            if (bitsPerComponent == 8 && Arrays.equals(decode, defaultDecode) &&
                 colorKey == null)
             {
                 // convert image, faster path for non-decoded, non-colormasked 8-bit images
@@ -490,6 +491,7 @@ final class SampledImageReader
         final int numComponents = colorSpace.getNumberOfComponents();
         final int bitsPerComponent = pdImage.getBitsPerComponent();
         final float[] decode = getDecodeArray(pdImage);
+        Log.w("ceshi","colorSpace==="+colorSpace.getClass().getSimpleName());
         Log.w("ceshi","forAny-numComponents="+numComponents);
         DecodeOptions options = new DecodeOptions(currentSubsampling);
         options.setSourceRegion(clipped);
@@ -577,10 +579,11 @@ final class SampledImageReader
 
                     // only write to output if within requested region and subsample.
                     if (x >= startx && y >= starty && x % currentSubsampling == 0 && y % currentSubsampling == 0) {
+                        int i = (y - starty) * scanWidth + (x - startx);
                         if (numComponents == 1) {
-                            banks[(y - starty) * scanWidth + (x - startx)] = srcColorValues[0];
+                            banks[i] = srcColorValues[0];
                         } else {
-                            banks[(y - starty) * scanWidth + (x - startx)] = Color.argb(isMasked ? 255 : 0, srcColorValues[0], srcColorValues[1], srcColorValues[2]);
+                            banks[i] = Color.argb(isMasked ? 255 : 0, srcColorValues[0], srcColorValues[1], srcColorValues[2]);
                         }
 //                        raster.setDataElements((x - startx) / currentSubsampling, (y - starty) / currentSubsampling, srcColorValues);
 //

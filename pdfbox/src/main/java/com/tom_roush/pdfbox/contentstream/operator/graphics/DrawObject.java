@@ -52,7 +52,7 @@ public final class DrawObject extends GraphicsOperatorProcessor
             return;
         }
         COSName objectName = (COSName) base0;
-        Log.w("ceshi","objectName:"+objectName.getName());
+//        Log.w("ceshi","objectName:"+objectName.getName());
         PDXObject xobject = context.getResources().getXObject(objectName);
 
         if (xobject == null)
@@ -61,7 +61,7 @@ public final class DrawObject extends GraphicsOperatorProcessor
         }
         else if (xobject instanceof PDImageXObject)
         {
-            Log.w("ceshi","DrawObject1111");
+//            Log.w("ceshi","DrawObject1111");
 //            if (objectName.getName().equals("Im20")) {
                 PDImageXObject image = (PDImageXObject)xobject;
                 context.drawImage(image);

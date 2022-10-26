@@ -426,7 +426,10 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 
             // render glyph
 //            Shape glyph = at.createTransformedShape(path);
-            path.transform(at.toMatrix());
+            Path clone = new Path();
+            clone.addPath(path);
+            clone.transform(at.toMatrix());
+//            path.transform(at.toMatrix());
             RectF rectF = new RectF();
             path.computeBounds(rectF,true);
 
@@ -438,7 +441,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
                     paint.setColor(getNonStrokingColor());
                     setClip();
                     paint.setStyle(Paint.Style.FILL);
-                    canvas.drawPath(path, paint);
+                    canvas.drawPath(clone, paint);
                 }
                 if (renderingMode.isStroke())
                 {
@@ -447,14 +450,14 @@ public class PageDrawer extends PDFGraphicsStreamEngine
                     setStroke();
                     setClip();
                     paint.setStyle(Paint.Style.STROKE);
-                    canvas.drawPath(path, paint);
+                    canvas.drawPath(clone, paint);
                 }
             }
 
             if (renderingMode.isClip())
             {
-                Log.w("ceshi","字体路径333：");
-//                textClippings.add(glyph); TODO: PdfBox-Android
+//                Log.w("ceshi","字体路径333：");
+                textClippings.add(clone);
             }
         }
     }

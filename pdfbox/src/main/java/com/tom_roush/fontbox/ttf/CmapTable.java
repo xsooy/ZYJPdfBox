@@ -86,7 +86,6 @@ public class CmapTable extends TTFTable
 //        Log.w("ceshi","ttf.hasCode"+ttf.hashCode());
         for (int i = 0; i < numberOfTables; i++)
         {
-            Log.w("ceshi","ttf.hasCode"+ttf.hashCode());
             cmaps[i].initSubtable(this, ttf.getNumberOfGlyphs(), data);
         }
         initialized = true;

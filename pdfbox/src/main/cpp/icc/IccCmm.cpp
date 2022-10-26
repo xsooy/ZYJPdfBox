@@ -10,8 +10,6 @@
 
 #include <android/log.h>
 
-#define TAG "IccCmm"
-#define pri_debug(format, args...) __android_log_print(ANDROID_LOG_DEBUG, TAG, "[%s:%d]" format, basename(__FILE__), __LINE__, ##args)
 
 /*
  * The ICC Software License, Version 0.2
@@ -1285,7 +1283,6 @@ icStatusCMM CIccXformMonochrome::Begin()
 */
 void CIccXformMonochrome::Apply(CIccApplyXform* pApply, icFloatNumber *DstPixel, const icFloatNumber *SrcPixel) const
 {
-    pri_debug("1233333");
 	icFloatNumber Pixel[3];
 	SrcPixel = CheckSrcAbs(pApply, SrcPixel);
 

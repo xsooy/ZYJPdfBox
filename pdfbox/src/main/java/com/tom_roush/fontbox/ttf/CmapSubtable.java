@@ -86,7 +86,6 @@ public class CmapSubtable implements CmapLookup
             length = data.readUnsignedInt();
             version = data.readUnsignedInt();
         }
-        Log.w("ceshi","initSubtable=="+subtableFormat+",,,"+cmap.hashCode());
         switch (subtableFormat)
         {
             case 0:

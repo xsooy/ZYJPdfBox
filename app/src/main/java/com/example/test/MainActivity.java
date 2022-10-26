@@ -97,12 +97,12 @@ public class MainActivity extends AppCompatActivity {
             pdfRenderer.close();
             fileDescriptor.canDetectErrors();
 //            if (!isSys) {
-                PDDocument document = PDDocument.load(new File(path));
-                YJPDFRenderer renderer = new YJPDFRenderer(document);
-                renderer.renderImage(bitmap,0);
-                String filePath = getPreviewDir()+"temp.jpg";
-                saveBitmap(bitmap,filePath);
-                document.close();
+//                PDDocument document = PDDocument.load(new File(path));
+//                YJPDFRenderer renderer = new YJPDFRenderer(document);
+//                renderer.renderImage(bitmap,0);
+//                String filePath = getPreviewDir()+"temp.jpg";
+//                saveBitmap(bitmap,filePath);
+//                document.close();
 //            }
             Glide.with(this).load(bitmap).into(imageView);
 //            imageView.setImageBitmap(bitmap);

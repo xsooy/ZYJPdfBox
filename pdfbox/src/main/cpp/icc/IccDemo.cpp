@@ -8,7 +8,7 @@
 #include <android/log.h>
 
 #define TAG "IccCmm_ceshi"
-#define pri_debug(format, args...) __android_log_print(ANDROID_LOG_DEBUG, TAG, "[%s:%d]" format, basename(__FILE__), __LINE__, ##args)
+#define pri_debug(format, args...) __android_log_print(ANDROID_LOG_DEBUG, TAG, "[%s:%d]" format, "IccDemo.cpp", __LINE__, ##args)
 
 CIccCmm *cmm = nullptr;
 icFloatNumber Pixels[16];

@@ -1023,13 +1023,10 @@ public class CFFParser
         switch (format)
         {
             case 0:
-                Log.w("ceshi","readCharset1");
                 return readFormat0Charset(dataInput, format, nGlyphs, isCIDFont);
             case 1:
-                Log.w("ceshi","readCharset2");
                 return readFormat1Charset(dataInput, format, nGlyphs, isCIDFont);
             case 2:
-                Log.w("ceshi","readCharset3");
                 return readFormat2Charset(dataInput, format, nGlyphs, isCIDFont);
             default:
                 throw new IllegalArgumentException();

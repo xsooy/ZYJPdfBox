@@ -10,4 +10,6 @@
   -增加对DeviceN的支持
   -实现ShadingFill下部分功能
 
+修改字体匹配规则，增加对思源字体的匹配
+
 实现使用Android自带系统解析库与Pdfbox混合解析，解决Android系统下，注释对象无法解析等问题

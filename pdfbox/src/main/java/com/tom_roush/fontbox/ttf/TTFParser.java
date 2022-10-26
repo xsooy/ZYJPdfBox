@@ -174,7 +174,6 @@ public class TTFParser
         {
             if (!table.getInitialized())
             {
-                Log.w("ceshi","测试条件11==="+font.getName());
                 font.readTable(table);
             }
         }

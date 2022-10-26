@@ -5,7 +5,7 @@ plugins {
 ext {
     PUBLISH_GROUP_ID = 'com.tom-roush'
     PUBLISH_ARTIFACT_ID = 'pdfbox-android'
-    PUBLISH_VERSION = 'V2.0.13.4'
+    PUBLISH_VERSION = 'V2.0.13.7'
 }
 
 android {
@@ -13,9 +13,9 @@ android {
     compileOptions.encoding = 'UTF-8'
 
     defaultConfig {
-        minSdkVersion 23
+        minSdkVersion 21
         targetSdkVersion 31
-        versionName "V2.0.13.4"
+        versionName "V2.0.13.11"
         versionCode 1
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         testInstrumentationRunnerArgument "notAnnotation", "androidx.test.filters.FlakyTest"

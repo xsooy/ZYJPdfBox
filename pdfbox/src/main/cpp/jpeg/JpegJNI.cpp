@@ -17,7 +17,7 @@
 #include "jpegint.h"
 
 #define TAG "Jpeg_ceshi"
-#define pri_debug(format, args...) __android_log_print(ANDROID_LOG_DEBUG, TAG, "[%s:%d]" format, basename(__FILE__), __LINE__, ##args)
+#define pri_debug(format, args...) __android_log_print(ANDROID_LOG_DEBUG, TAG, "[%s:%d]" format, "JpegJNI.cpp", __LINE__, ##args)
 
 
 extern "C"{

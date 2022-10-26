@@ -444,8 +444,9 @@ public final class PDImageXObject extends PDXObject implements PDImage
         {
 //            return softMask.getImage();
             float[] matte = extractMatte(softMask);
-//            Log.w("ceshi","applyMask111");
-            image = applyMask(image, softMask.getOpaqueImage(), true, matte);
+            Log.w("ceshi","applyMask111");
+
+            image = applyMask(image, softMask.getOpaqueImage(),softMask.getInterpolate(), true, matte);
         }
         else
         {
@@ -453,8 +454,8 @@ public final class PDImageXObject extends PDXObject implements PDImage
             PDImageXObject mask = getMask();
             if (mask != null && mask.isStencil())
             {
-//                Log.w("ceshi","applyMask222");
-                image = applyMask(image, mask.getOpaqueImage(), false, null);
+                Log.w("ceshi","applyMask222");
+                image = applyMask(image, mask.getOpaqueImage(),mask.getInterpolate(), false, null);
             }
         }
 
@@ -511,74 +512,189 @@ public final class PDImageXObject extends PDXObject implements PDImage
 
     // explicit mask: RGB + Binary -> ARGB
     // soft mask: RGB + Gray -> ARGB
-    private Bitmap applyMask(Bitmap image, Bitmap mask,
-        boolean isSoft, float[] matte)
-        throws IOException
+//    private Bitmap applyMask(Bitmap image, Bitmap mask,
+//        boolean isSoft, float[] matte)
+//        throws IOException
+//    {
+//        if (mask == null)
+//        {
+//            return image;
+//        }
+//
+//        int width = image.getWidth();
+//        int height = image.getHeight();
+//
+//        // scale mask to fit image, or image to fit mask, whichever is larger
+//        if (mask.getWidth() < width || mask.getHeight() < height)
+//        {
+//            mask = scaleImage(mask, width, height);
+//        }
+//        else if (mask.getWidth() > width || mask.getHeight() > height)
+//        {
+//            width = mask.getWidth();
+//            height = mask.getHeight();
+//            image = scaleImage(image, width, height);
+//        }
+//
+//        // compose to ARGB
+//        Bitmap masked = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+//
+//        int rgb;
+//        int rgba;
+//        int alphaPixel;
+//        int alpha;
+//        int test=0;
+//
+//        for (int y = 0; y < height; y++)
+//        {
+//            for (int x = 0; x < width; x++)
+//            {
+//                rgb = image.getPixel(x, y);
+//
+//                alphaPixel = mask.getPixel(x, y);
+//
+//                if (isSoft)
+//                {
+//                    alpha = Color.alpha(alphaPixel);
+//                    if (matte != null && Float.compare(alphaPixel, 0) != 0)
+//                    {
+//                        rgb = Color.rgb(
+//                            clampColor(((Color.red(rgb) / 255 - matte[0]) / (alphaPixel / 255) + matte[0]) * 255),
+//                            clampColor(((Color.green(rgb) / 255 - matte[1]) / (alphaPixel / 255) + matte[1]) * 255),
+//                            clampColor(((Color.blue(rgb) / 255 - matte[2]) / (alphaPixel / 255) + matte[2]) * 255)
+//                        );
+//                    }
+//                }
+//                else
+//                {
+//                    alpha = 255 - Color.alpha(alphaPixel);
+//                }
+//                if (alpha!=0) {
+//                    test++;
+//                }
+//                rgba = Color.argb(alpha, Color.red(rgb), Color.green(rgb),
+//                    Color.blue(rgb));
+//                masked.setPixel(x, y, rgba);
+//            }
+//        }
+//
+////        Log.w("ceshi","masked==="+test);
+//        return masked;
+//    }
+
+    private Bitmap applyMask(Bitmap image, Bitmap mask, boolean interpolateMask,
+                             boolean isSoft, float[] matte)
     {
         if (mask == null)
         {
             return image;
         }
 
-        int width = image.getWidth();
-        int height = image.getHeight();
+        final int width = Math.max(image.getWidth(), mask.getWidth());
+        final int height = Math.max(image.getHeight(), mask.getHeight());
 
-        // scale mask to fit image, or image to fit mask, whichever is larger
+        // scale mask to fit image, or image to fit mask, whichever is larger.
+        // also make sure that mask is 8 bit gray and image is ARGB as this
+        // is what needs to be returned.
         if (mask.getWidth() < width || mask.getHeight() < height)
         {
-            mask = scaleImage(mask, width, height);
+            mask = scaleImage(mask, width, height, interpolateMask);
         }
-        else if (mask.getWidth() > width || mask.getHeight() > height)
+        if (mask.getConfig() != Bitmap.Config.ALPHA_8 || !image.isMutable())
         {
-            width = mask.getWidth();
-            height = mask.getHeight();
-            image = scaleImage(image, width, height);
+            mask = mask.copy(Bitmap.Config.ALPHA_8, true);
         }
 
-        // compose to ARGB
-        Bitmap masked = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-
-        int rgb;
-        int rgba;
-        int alphaPixel;
-        int alpha;
-        int test=0;
-
-        for (int y = 0; y < height; y++)
+        if (image.getWidth() < width || image.getHeight() < height)
         {
-            for (int x = 0; x < width; x++)
+            image = scaleImage(image, width, height, getInterpolate());
+        }
+        if (image.getConfig() != Bitmap.Config.ARGB_8888 || !image.isMutable())
+        {
+            image = image.copy(Bitmap.Config.ARGB_8888, true);
+        }
+        int[] pixels = new int[width];
+        int[] maskPixels = new int[width];
+
+        // compose alpha into ARGB image, either:
+        // - very fast by direct bit combination if not a soft mask and a 8 bit alpha source.
+        // - fast by letting the sample model do a bulk band operation if no matte is set.
+        // - slow and complex by matte calculations on individual pixel components.
+        if (!isSoft && image.getByteCount() == mask.getByteCount())
+        {
+            for (int y = 0; y < height; y++)
             {
-                rgb = image.getPixel(x, y);
-
-                alphaPixel = mask.getPixel(x, y);
-
-                if (isSoft)
+                image.getPixels(pixels, 0, width, 0, y, width, 1);
+                mask.getPixels(maskPixels, 0, width, 0, y, width, 1);
+                for (int i = 0, c = width; c > 0; i++, c--)
                 {
-                    alpha = Color.alpha(alphaPixel);
-                    if (matte != null && Float.compare(alphaPixel, 0) != 0)
-                    {
-                        rgb = Color.rgb(
-                            clampColor(((Color.red(rgb) / 255 - matte[0]) / (alphaPixel / 255) + matte[0]) * 255),
-                            clampColor(((Color.green(rgb) / 255 - matte[1]) / (alphaPixel / 255) + matte[1]) * 255),
-                            clampColor(((Color.blue(rgb) / 255 - matte[2]) / (alphaPixel / 255) + matte[2]) * 255)
-                        );
-                    }
+                    pixels[i] = pixels[i] & 0xffffff | ~maskPixels[i] & 0xff000000;
                 }
-                else
-                {
-                    alpha = 255 - Color.alpha(alphaPixel);
-                }
-                if (alpha!=0) {
-                    test++;
-                }
-                rgba = Color.argb(alpha, Color.red(rgb), Color.green(rgb),
-                    Color.blue(rgb));
-                masked.setPixel(x, y, rgba);
+                image.setPixels(pixels, 0, width, 0, y, width, 1);
             }
         }
-
-//        Log.w("ceshi","masked==="+test);
-        return masked;
+        else if (matte == null)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                image.getPixels(pixels, 0, width, 0, y, width, 1);
+                mask.getPixels(maskPixels, 0, width, 0, y, width, 1);
+                for (int x = 0; x < width; x++)
+                {
+                    if (!isSoft)
+                    {
+                        maskPixels[x] ^= -1;
+                    }
+                    pixels[x] = pixels[x] & 0xffffff | maskPixels[x] & 0xff000000;
+                }
+                image.setPixels(pixels, 0, width, 0, y, width, 1);
+            }
+        }
+        else
+        {
+            // Original code is to clamp component and alpha to [0f, 1f] as matte is,
+            // and later expand to [0; 255] again (with rounding).
+            // component = 255f * ((component / 255f - matte) / (alpha / 255f) + matte)
+            //           = (255 * component - 255 * 255f * matte) / alpha + 255f * matte
+            // There is a clearly visible factor 255 for most components in above formula,
+            // i.e. max value is 255 * 255: 16 bits + sign.
+            // Let's use faster fixed point integer arithmetics with Q16.15,
+            // introducing neglible errors (0.001%).
+            // Note: For "correct" rounding we increase the final matte value (m0h, m1h, m2h) by
+            // a half an integer.
+            final int fraction = 15;
+            final int factor = 255 << fraction;
+            final int m0 = Math.round(factor * matte[0]) * 255;
+            final int m1 = Math.round(factor * matte[1]) * 255;
+            final int m2 = Math.round(factor * matte[2]) * 255;
+            final int m0h = m0 / 255 + (1 << fraction - 1);
+            final int m1h = m1 / 255 + (1 << fraction - 1);
+            final int m2h = m2 / 255 + (1 << fraction - 1);
+            for (int y = 0; y < height; y++)
+            {
+                image.getPixels(pixels, 0, width, 0, y, width, 1);
+                mask.getPixels(maskPixels, 0, width, 0, y, width, 1);
+                for (int x = 0; x < width; x++)
+                {
+                    int a = Color.alpha(maskPixels[x]);
+                    if (a == 0)
+                    {
+                        pixels[x] = pixels[x] & 0xffffff;
+                        continue;
+                    }
+                    int rgb = pixels[x];
+                    int r = Color.red(rgb);
+                    int g = Color.green(rgb);
+                    int b = Color.blue(rgb);
+                    r = clampColor(((r * factor - m0) / a + m0h) >> fraction);
+                    g = clampColor(((g * factor - m1) / a + m1h) >> fraction);
+                    b = clampColor(((b * factor - m2) / a + m2h) >> fraction);
+                    pixels[x] = Color.argb(a, r, g, b);
+                }
+                image.setPixels(pixels, 0, width, 0, y, width, 1);
+            }
+        }
+        return image;
     }
 
     private int clampColor(float color)
@@ -589,9 +705,9 @@ public final class PDImageXObject extends PDXObject implements PDImage
     /**
      * High-quality image scaling.
      */
-    private Bitmap scaleImage(Bitmap image, int width, int height)
+    private Bitmap scaleImage(Bitmap image, int width, int height, boolean interpolate)
     {
-        return Bitmap.createScaledBitmap(image, width, height, true);
+        return Bitmap.createScaledBitmap(image, width, height, !interpolate);
     }
 
     /**

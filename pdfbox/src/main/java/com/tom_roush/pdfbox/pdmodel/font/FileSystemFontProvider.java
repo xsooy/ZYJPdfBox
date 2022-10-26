@@ -644,7 +644,6 @@ final class FileSystemFontProvider extends FontProvider
      */
     private void addTrueTypeFontImpl(TrueTypeFont ttf, File file) throws IOException
     {
-        Log.w("ceshi","ttf==="+ttf.getName()+",file==="+file.getPath());
         try
         {
             // read PostScript name, if any
@@ -692,7 +691,6 @@ final class FileSystemFontProvider extends FontProvider
                         int supplement = cidFont.getSupplement();
                         ros = new CIDSystemInfo(registry, ordering, supplement);
                     }
-                    Log.w("ceshi","addOTF===="+ttf.getName());
                     fontInfoList.add(new FSFontInfo(file, FontFormat.OTF, ttf.getName(), ros,
                         usWeightClass, sFamilyClass, ulCodePageRange1, ulCodePageRange2,
                         macStyle, panose, this));
@@ -713,7 +711,6 @@ final class FileSystemFontProvider extends FontProvider
                     }
 
                     format = "TTF";
-                    Log.w("ceshi","addTTF===="+ttf.getName());
                     fontInfoList.add(new FSFontInfo(file, FontFormat.TTF, ttf.getName(), ros,
                         usWeightClass, sFamilyClass, ulCodePageRange1, ulCodePageRange2,
                         macStyle, panose, this));
